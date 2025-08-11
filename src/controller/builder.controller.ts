@@ -233,7 +233,7 @@ export const getModuleByBuilderAndType = async (req: Request, res: Response): Pr
 
 declare module 'express-serve-static-core' {
   interface Request {
-    userId?: string
+    userId: string
     user?: IUser;
   }
 }
