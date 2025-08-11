@@ -1,0 +1,191 @@
+import OpenAI from "openai";
+import { Request, Response } from 'express';
+import { ModuleModel } from "../../model/module.model";
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { SpeakingChatModel } from "../../model/chatHIstory.model";
+import { FeedbackInput } from "../builder.controller";
+
+
+
+
+
+export const getSpeakingTaskLogic = async (
+  req: Request
+): Promise<{ moduleId: string }> => {
+  const { topic, level, formality, style = 'defaultStyle', language = 'german' } = req.body;
+
+ 
+
+  const prompt = `
+You are a skilled language teacher for foreign language learners. Create a creative, open-ended speaking task for a student at level ${level}.
+
+Details:
+- Topic: ${topic}
+- Formality: ${formality}
+${style ? `- Style (optional): ${style}` : ''}
+- Language: ${language}
+
+The task should sound natural, encourage spontaneous speech, and invite conversation. Use casual language where appropriate.
+
+⚠️ The task **must be written entirely in ${language}**.
+
+Reply **only in JSON format** like this:
+{
+  "prompt": "<Situational or role-based speaking prompt in ${language}>"
+}
+  `.trim();
+
+  let completion;
+  try {
+    completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      temperature: 0.8,
+      messages: [
+        {
+          role: 'system',
+          content: `You are an assistant that generates creative speaking tasks for language learners in ${language}. Always respond in ${language}.`,
+        },
+        { role: 'user', content: prompt },
+      ],
+    });
+  } catch (err) {
+    console.error('OpenAI API error:', err);
+    throw new Error('Failed to generate speaking prompt from AI.');
+  }
+
+  const content = completion.choices[0]?.message?.content || '';
+  let data;
+  try {
+    data = JSON.parse(content);
+  } catch (err) {
+    console.error('Invalid JSON from OpenAI:', content);
+    throw new Error('OpenAI returned invalid JSON.');
+  }
+
+  if (!data.prompt || typeof data.prompt !== 'string') {
+    throw new Error('AI response is missing a valid "prompt" field.');
+  }
+
+  // Optionally: Check if the language matches (e.g., for "de", check if response starts in German)
+  // You could use a language detector like franc or simple heuristics here if needed
+
+  const newModule = await ModuleModel.create({
+    type: 'speaking',
+    task: data.prompt,
+    aiFeedback: null,
+    paragraph: null,
+    questions: [],
+    answers: [],
+    comprehension: null,
+  });
+
+  const newChat = await SpeakingChatModel.create({
+    moduleId: newModule._id,
+    messages: [
+      {
+        role: 'assistant',
+        content: data.prompt,
+        timestamp: new Date(),
+      },
+    ],
+  });
+
+  newModule.chatId = newChat._id;
+  await newModule.save();
+
+  return { moduleId: newModule._id.toString() };
+};
+
+
+
+
+
+export const generateSpeakingFeedbackHelper = async (
+  input: FeedbackInput
+): Promise<{ feedback: any; moduleId: string }> => {
+  const { moduleId ,language } = input;
+
+  if (!moduleId) {
+    throw new Error('Missing moduleId');
+  }
+
+  const module = await ModuleModel.findById(moduleId);
+  if (!module || module.type !== 'speaking') {
+    throw new Error('Speaking module not found.');
+  }
+
+  const chat = await SpeakingChatModel.findOne({ moduleId }).lean();
+  if (!chat || !chat.messages || chat.messages.length === 0) {
+    throw new Error('No chat history found for this module.');
+  }
+
+  const conversation = chat.messages
+    .map((msg) => `${msg.role === 'user' ? '🧑' : '🤖'} ${msg.content}`)
+    .join('\n');
+
+  const prompt = `
+You are a professional ${language} language evaluator.
+
+A student has completed the following speaking task:
+"${module.task}"
+
+Below is the complete conversation between the student and the AI assistant:
+${conversation}
+
+Evaluate the student's performance.
+
+Return feedback in this strict JSON format ONLY:
+{
+  "Gesamtnote": "4/5 (Gut)",
+  "Evaluation": {
+    "Pronunciation": "Mostly clear, but watch out for 'r' sounds.",
+    "Fluency": "Good, some hesitations when searching for vocabulary.",
+    "Grammar": "Generally correct, minor errors in sentence structure.",
+    "Response Relevance": "Stayed on topic and answered questions well."
+  },
+  "Tips": [
+    "Practice common linking phrases to improve flow.",
+    "Expand vocabulary related to business and technology.",
+    "Focus on intonation to sound more natural."
+  ]
+}
+
+Do NOT include any explanation or extra text outside the JSON object.
+`.trim();
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4',
+    temperature: 0.7,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a structured evaluator of ${language} speaking tasks. Respond only in strict JSON.',
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  });
+
+  const aiResponse = completion.choices[0]?.message?.content?.trim();
+  if (!aiResponse) {
+    throw new Error('No feedback generated by AI.');
+  }
+
+  let feedback;
+  try {
+    feedback = JSON.parse(aiResponse);
+  } catch (err) {
+    console.error('Invalid JSON from OpenAI:', aiResponse);
+    throw new Error('Invalid JSON returned by AI.');
+  }
+
+  module.aiFeedback = feedback;
+  await module.save();
+
+  return {
+    moduleId: module._id.toString(),
+    feedback,
+  };
+};
