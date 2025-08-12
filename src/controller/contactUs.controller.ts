@@ -17,7 +17,8 @@ export const    contactUs = async (
     //   data
     // });
     // }
-    const contactUs = await ContactUsModel.create({ email,firstName,lastName,message});
+    const lowercaseEmail=email?.toLowerCase();
+    const contactUs = await ContactUsModel.create({ email:lowercaseEmail,firstName,lastName,message});
 
     return SUCCESS(res, 201, 'We will contact you soon', {
       contactUs,

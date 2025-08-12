@@ -16,13 +16,15 @@ export const    subscribeToNewsletter = async (
       return next(new ErrorHandler('A valid email is required.', 400));
     }
 
-    const existing = await NewsletterSubscription.findOne({ email });
+    const lowercaseEmail=email?.toLowerCase();
+
+    const existing = await NewsletterSubscription.findOne({ email:lowercaseEmail });
 
     if (existing) {
       return next(new ErrorHandler('Email is already subscribed to the newsletter.', 400));
     }
 
-    const subscription = await NewsletterSubscription.create({ email });
+    const subscription = await NewsletterSubscription.create({ email:lowercaseEmail });
 
     return SUCCESS(res, 201, 'Successfully subscribed to the newsletter.', {
       subscription,
@@ -54,8 +56,8 @@ export const unsubscribeFromNewsletter = async (
 ): Promise<any> => {
   try {
     const { email } = req.body;
-
-    const deleted = await NewsletterSubscription.findOneAndDelete({ email });
+    const lowercaseEmail=email?.toLowerCase();
+    const deleted = await NewsletterSubscription.findOneAndDelete({ email:lowercaseEmail });
 
     if (!deleted) {
       return next(new ErrorHandler('Email is not subscribed.', 404));

@@ -9,15 +9,16 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
     try {
         const { socialId, provider, email, deviceToken, deviceType } = req.body;
         let user = await findUserBySocialId(socialId, provider);
-
+        const lowercaseEmail=email?.toLowerCase();
         if (!user) {
-            user = await findUserByEmail(email);
+            user = await findUserByEmail(lowercaseEmail);
+            
 
             if (user) {
                 user.socialLinkedAccounts.push({ provider, id: socialId });
             } else {
                 user = new User({
-                    email,
+                    email:lowercaseEmail,
                     socialLinkedAccounts: [{ provider, id: socialId }],
                     deviceToken,
                     deviceType,
@@ -46,8 +47,8 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, password, deviceToken, deviceType } = req.body;
-
-        const existingUser = await findUserByEmail(email);
+        const lowercaseEmail=email?.toLowerCase();
+        const existingUser = await findUserByEmail(lowercaseEmail);
         if (existingUser) {
             return next(new ErrorHandler("User already exists with this email", 400));
         }
@@ -56,7 +57,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         // const jti = generateRandomString(10);
 
         const newUser = new User({
-            email,
+            email:lowercaseEmail,
             password: hashedPassword,
             deviceToken,
             deviceType,
@@ -79,8 +80,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, password, deviceToken, deviceType } = req.body;
-
-        const user = await findUserByEmail(email);
+        const lowercaseEmail=email?.toLowerCase();
+        const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid credentials. Please try again.", 401));
         }
@@ -113,8 +114,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 export const forgetPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email } = req.body;
-
-        const user = await findUserByEmail(email);
+        const lowercaseEmail=email?.toLowerCase();
+        const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
         }
@@ -124,7 +125,7 @@ export const forgetPassword = async (req: Request, res: Response, next: NextFunc
         user.otpVerified = false;
         await user.save();
 
-        await sendEmail(email, 3, otp);
+        await sendEmail(lowercaseEmail, 3, otp);
 
         return SUCCESS(res, 200, "A one-time password (OTP) has been sent to your email to reset your password.", {
             user: userData(user)
@@ -140,8 +141,8 @@ export const forgetPassword = async (req: Request, res: Response, next: NextFunc
 const verifyOtp = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, otp } = req.body;
-
-        const user = await findUserByEmail(email);
+        const lowercaseEmail=email?.toLowerCase();
+        const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
         }
@@ -179,8 +180,8 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction): Promi
 const resendOtp = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email } = req.body;
-
-        const user = await findUserByEmail(email);
+        const lowercaseEmail=email?.toLowerCase();
+        const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
         }
@@ -198,7 +199,7 @@ const resendOtp = async (req: Request, res: Response, next: NextFunction): Promi
         user.otpVerified = false;
         await user.save();
 
-        await sendEmail(email, 3, otp);
+        await sendEmail(lowercaseEmail, 3, otp);
 
         return SUCCESS(res, 200, "A new one-time password (OTP) has been sent to your email.", {
             user: userData(user)
@@ -212,8 +213,8 @@ const resendOtp = async (req: Request, res: Response, next: NextFunction): Promi
 const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, password } = req.body;
-
-        const user = await findUserByEmail(email);
+        const lowercaseEmail=email?.toLowerCase();
+        const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
         }
