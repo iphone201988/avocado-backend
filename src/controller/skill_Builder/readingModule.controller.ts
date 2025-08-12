@@ -12,9 +12,9 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 export const generateComprehensionLogic = async (
   req: Request
 ): Promise<{ moduleId: string }> => {
-  const { topic, level, formality, style, length, language, lengthOption="medium" } = req.body;
+  const { topic, level, formality, style, length, language, lengthOption  } = req.body;
 
-  
+
 
   const wordLengthMap: Record<string, number> = {
     short: 100,
@@ -23,13 +23,20 @@ export const generateComprehensionLogic = async (
   };
 
   let wordCount: number;
-
+  if (!lengthOption) {
+    throw new ErrorHandler('Length option is required', 400);
+  }
   if (lengthOption.toLowerCase() === 'custom') {
     if (typeof length !== 'number' || length <= 0) {
       throw new ErrorHandler('Custom length must be a positive number.', 400);
     }
+     else if(length<20 || length>200){
+    throw new ErrorHandler('Custom length must be a greater than 20 and less than 200.', 400);
+  } 
     wordCount = length;
-  } else {
+  }
+ 
+  else {
     wordCount = wordLengthMap[lengthOption.toLowerCase()];
     if (!wordCount) {
       throw new ErrorHandler('Invalid length option. Use short, medium, long, or custom.', 400);
