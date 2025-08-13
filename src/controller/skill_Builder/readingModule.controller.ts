@@ -12,7 +12,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 export const generateComprehensionLogic = async (
   req: Request
 ): Promise<{ moduleId: string }> => {
-  const { topic, level, formality, style, length, language, lengthOption  } = req.body;
+  const { topic, level, formality, style, length, language, lengthOption="medium"  } = req.body;
 
 
 
