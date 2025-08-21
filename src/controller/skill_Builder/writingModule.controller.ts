@@ -33,8 +33,8 @@ Respond strictly in the following JSON format:
   let completion;
   try {
     completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      temperature: 0.7,
+      model: 'gpt-5',
+      // temperature: 0.7,
       messages: [
         {
           role: 'system',
@@ -126,8 +126,8 @@ DO NOT include explanations, formatting, or anything outside the JSON object.
 `.trim();
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4',
-    temperature: 0.7,
+    model: 'gpt-5',
+    // temperature: 0.7,
     messages: [
       {
         role: 'system',

@@ -44,7 +44,7 @@ Respond **strictly** in this JSON format:
   let completion;
   try {
     completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -55,7 +55,7 @@ Respond **strictly** in this JSON format:
           content: prompt,
         },
       ],
-      temperature: 0.8,
+      // temperature: 0.8,
     });
   } catch (err) {
     throw new ErrorHandler('Failed to generate content from OpenAI.', 502);
@@ -152,8 +152,8 @@ Now give detailed feedback for each answer in the following JSON format only:
   let content = '';
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      temperature: 0.7,
+      model: 'gpt-5',
+      // temperature: 0.7,
       messages: [
         {
           role: 'system',
@@ -218,7 +218,7 @@ Given the following input in english: "${text}"
 
 Perform the following steps:
 1. If the input is a **single word**, treat it as the main keyword.
-2. If the input is a **full sentence**, extract the most relevant noun or central concept from it (usually the main subject).
+2. If the input is a **full sentence**, then translate that sentence.
 
 Return ONLY a well-formatted JSON object with the following fields:
 
@@ -226,7 +226,7 @@ Return ONLY a well-formatted JSON object with the following fields:
   "noun": "<Extracted keyword or input word>",
   "meaning": "<Concise English definition of the word>",
   "example": "<german sentence using the word in natural context (may reuse the input if appropriate)>",
-  "translation": "<English translation of the example sentence>",
+  "translation": "<English translation of the "${text}"",
   "synonyms": "<Comma-separated list of 2 to 4 german synonyms>"
 }
 
@@ -234,8 +234,8 @@ Do not include any explanations, markdown, or additional commentary. Output a ra
 `;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      temperature: 0.7,
+      model: 'gpt-5',
+      // temperature: 0.7,
       messages: [
         {
           role: 'system',

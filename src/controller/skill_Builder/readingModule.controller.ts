@@ -12,7 +12,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 export const generateComprehensionLogic = async (
   req: Request
 ): Promise<{ moduleId: string }> => {
-  const { topic, level, formality, style, length, language, lengthOption="medium"  } = req.body;
+  const { topic, level, formality, style, length, language, lengthOption = "medium" } = req.body;
 
 
 
@@ -30,12 +30,12 @@ export const generateComprehensionLogic = async (
     if (typeof length !== 'number' || length <= 0) {
       throw new ErrorHandler('Custom length must be a positive number.', 400);
     }
-     else if(length<20 || length>200){
-    throw new ErrorHandler('Custom length must be a greater than 20 and less than 200.', 400);
-  } 
+    else if (length < 20 || length > 500) {
+      throw new ErrorHandler('Custom length must be a greater than 20 and less than 500.', 400);
+    }
     wordCount = length;
   }
- 
+
   else {
     wordCount = wordLengthMap[lengthOption.toLowerCase()];
     if (!wordCount) {
@@ -102,10 +102,35 @@ Follow these instructions strictly:
 Begin now. Return only a valid JSON object with no surrounding text.
 `;
 
+  const prompt2 = `
+You are an educational content creator with extensive experience in developing materials that enhance language learning and comprehension skills for diverse learners. Your expertise lies in creating structured texts and relevant questions that support reading development in a clear and engaging manner. 
+
+Your task is to generate a reading comprehension paragraph based on the topic: "${topic}". The content should be tailored for language learners at the level of "${level}". 
+
+The paragraph must maintain a "${formality}" tone, using either formal or informal language as specified. Additionally, write in the style of a “_________”, ensuring clarity and educational value throughout. The text should be strictly ${wordCount} words long, with a permissible range of +-2%.
+
+The output must be entirely in ${language}, with no other languages included. Following the paragraph, generate exactly four comprehension questions, each focusing on a different aspect of understanding the text, including the main idea, specific details, inference, and vocabulary context. Each question must be clearly related to the content of the paragraph.
+
+Return the output strictly as a valid JSON object with the following structure:
+
+{
+  "comprehension": "Your generated paragraph here...",
+  "questions": [
+    "Question 1 in  ${language}",
+    "Question 2 in  ${language}",
+    "Question 3 in ${language}",
+    "Question 4 in ${language}"
+  ]
+}
+
+Ensure that the vocabulary, tone, and sentence structure are consistent with the learner level. The paragraph must logically support all four comprehension questions, and synonyms or alternate phrasings not used in the paragraph should be avoided.
+
+Do not include any explanations, notes, titles, or labels outside the JSON structure. Output must be raw JSON, ready to be parsed by code.`
+
   let content = '';
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-5',
       messages: [
         {
           role: 'system',
@@ -117,7 +142,8 @@ Begin now. Return only a valid JSON object with no surrounding text.
           content: prompt,
         },
       ],
-      temperature: 0.8,
+      // temperature: 0.8,
+
     });
 
     content = completion.choices[0]?.message?.content || '';
@@ -227,8 +253,8 @@ Nur JSON antworten, auf Deutsch. Keine Erklärungen.
   let content = '';
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      temperature: 0.7,
+      model: 'gpt-5',
+      // temperature: 0.7,
       messages: [
         { role: 'system', content: 'Du bist ein hilfsbereiter Deutschlehrer.' },
         { role: 'user', content: feedbackPrompt },

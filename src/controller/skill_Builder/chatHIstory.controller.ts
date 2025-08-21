@@ -64,8 +64,8 @@ Continue the conversation naturally in ${language}. React to the user's last mes
     ];
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      temperature: 0.7,
+      model: 'gpt-5',
+      // temperature: 0.7,
       messages: openAiMessages,
     });
 
