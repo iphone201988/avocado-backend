@@ -5,18 +5,29 @@ import { connectToDB } from "./src/utils/helper";
 import { errorMiddleware } from "./src/middleware/error.middleware";
 import router from "./src/route/index.route";
 import cors from "cors";
+import path from "path";
 
 const app = express();
 
 app.use(express.json());
 app.use(morgan("tiny"));
-app.use(cors({
-  origin: "*"
-}));
+app.use(cors());
+app.get("/success", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/success.html"));
+});
 
+app.get("/cancel", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/cancel.html"));
+});
+
+app.post("/webhook", (req, res) => {
+  console.log(req.body);
+  res.send("successfully submitted")
+});
 const app2=express();
 
 app.use("/api/v1",router);
+
 
 app.use(errorMiddleware);
 
