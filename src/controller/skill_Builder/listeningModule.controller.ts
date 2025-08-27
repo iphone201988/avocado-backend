@@ -4,12 +4,34 @@ import dotenv from 'dotenv';
 import { ModuleModel } from '../../model/module.model';
 import { FeedbackInput } from '../builder.controller';
 import ErrorHandler from '../../utils/ErrorHandler';
+import { hasActiveSubscription } from '../../middleware/checkSubscription.middleware';
 dotenv.config();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 
 export const generateAudio = async (req: Request): Promise<{ moduleId: string }> => {
+
+  // const userId = req.userId;
+  //   const subs=await hasActiveSubscription(userId);
+  //   console.log(subs);
+  //   if(!subs.valid){
+  //       try {
+  //   const newModule = await ModuleModel.create({
+  //     type: 'listening',
+  //     subscriptionRequired:true
+  //   });
+    
+
+
+  //   return { moduleId: newModule._id.toString() };
+  // } catch (err) {
+  //   console.error('Error saving module to DB:', err);
+  //   throw new ErrorHandler('Failed to save generated module to the database.', 500);
+  // }
+  //   }
+  
+
   const { topic, level, formality, style = 'defaultStyle', language = 'german' } = req.body;
 
   if (!topic || !level || !formality || !language) {
@@ -70,7 +92,8 @@ Respond **strictly** in this JSON format:
     console.error('OpenAI response was not valid JSON:', content);
     throw new ErrorHandler('Failed to parse OpenAI response.', 500);
   }
-
+   
+     
   try {
     const newModule = await ModuleModel.create({
       type: 'listening',
@@ -79,6 +102,8 @@ Respond **strictly** in this JSON format:
       comprehension: data.comprehension,
       aiFeedback: null,
     });
+    
+
 
     return { moduleId: newModule._id.toString() };
   } catch (err) {

@@ -4,6 +4,7 @@ import User from "../model/user.model";
 import { comparePassword, generateOTP, generateRandomString, hashPassword, signToken, SUCCESS } from "../utils/helper";
 import { sendEmail } from "../utils/sendEmail";
 import ErrorHandler from "../utils/ErrorHandler";
+import subscriptionModel from "../model/subscription.model";
 
 const socialLogin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
@@ -257,15 +258,61 @@ export const getUser = async (req: Request, res: Response, next: NextFunction): 
       if (!user) {
         return next(new ErrorHandler("User not found", 404));
       }
-  
+      const subscription=await subscriptionModel.find({stripeSubscriptionId:user.subscriptionId}).lean()
+      console.log(user.subscriptionId)
       return SUCCESS(res, 200, "User details fetched successfully", {
-        user: userData(user),
+        user: userData(user),subscription
       });
     } catch (error) {
       next(error);
     }
   };
 
+
+
+  export const updateUserProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
+    }
+
+    const { name, bio } = req.body;
+
+    if (!name && !bio) {
+      return next(new ErrorHandler("Nothing to update", 400));
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { 
+        ...(name !== undefined && { name }),
+        ...(bio !== undefined && { bio }) 
+      },
+      { new: true } // return the updated user
+    ).lean();
+
+    if (!updatedUser) {
+      return next(new ErrorHandler("User not found", 404));
+    }
+
+    return SUCCESS(res, 200, "Profile updated successfully", {
+      user: {
+        _id: updatedUser._id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        bio: updatedUser.bio,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 export default {
     socialLogin,
     register,
@@ -274,5 +321,6 @@ export default {
     verifyOtp,
     resetPassword,
     resendOtp,
-    getUser
+    getUser,
+    updateUserProfile
 }

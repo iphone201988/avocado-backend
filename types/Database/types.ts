@@ -11,6 +11,7 @@ export interface NewsletterSubscriptionDocument extends Document {
 }
 
 export interface IUser extends Document {
+  bio?:string;
   socialLinkedAccounts?: ISocialLinkedAccount[];
   email?: string;
   password?: string;
@@ -19,6 +20,8 @@ export interface IUser extends Document {
     type: "Point";
     coordinates: [number, number];
   };
+  name:string
+  stripeId?:string,
   deviceToken?: string;
   deviceType?: 1;
   jti?: string;
@@ -28,6 +31,7 @@ export interface IUser extends Document {
   isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  subscriptionId?: string; 
     lessons?: {
     moduleId: Types.ObjectId; // or string if you're storing as string
   }[];

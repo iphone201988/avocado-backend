@@ -14,7 +14,8 @@ const ModuleSchema = new Schema<ModuleDocument>(
     task: { type: String },
     comprehension: { type: String },
     aiFeedback: { type: Schema.Types.Mixed }, // JSON object or array
-    chatId:Schema.Types.ObjectId
+    chatId:Schema.Types.ObjectId,
+    subscriptionRequired:{type:Boolean}
   },
   {
     timestamps: true, // Adds createdAt and updatedAt

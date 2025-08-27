@@ -1,3 +1,4 @@
+import subscriptionModel from "../model/subscription.model";
 import User from "../model/user.model";
 
 export const findUserByEmail = async (email: string) => await User.findOne({ email });
@@ -10,6 +11,5 @@ export const findUserBySocialId = async (id: string, provider: number) => await 
 });
 
 export const userData = (user: any) => {
-  return { _id: user._id, email: user.email,
-   }
+  return { _id: user._id, email: user.email,name:user?.name || "" , bio:user?.bio||""}
 };

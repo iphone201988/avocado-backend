@@ -19,11 +19,12 @@ const userSchema = new Schema<IUser>(
         type: [Number],
       },
     },
+    bio:{type:String},
     lessons: [
       {
         moduleId: {
           type: Schema.Types.ObjectId,
-          ref: 'Module', // or 'ScoredLesson' if referencing scored lessons
+          ref: 'Module', 
         },
       }
     ],
@@ -34,6 +35,14 @@ const userSchema = new Schema<IUser>(
     otpExpiry: { type: Date },
     otpVerified: { type: Boolean },
     isDeleted: { type: Boolean, default: false },
+    stripeId:{type:String},
+    subscriptionId: {
+          type:String,
+          ref: 'Subscription', 
+        },
+    name:{
+      type:String,
+    }
   },
   { timestamps: true }
 );

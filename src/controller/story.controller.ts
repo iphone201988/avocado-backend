@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import { generatorMap, SUPPORTED_TYPES } from "./builder.controller";
 import { ModuleKind } from "../schema/lesson.schema";
 import { SocialLoginType } from "../utils/enums";
+import { hasActiveSubscription } from "../middleware/checkSubscription.middleware";
 
 
 export const generateFullStoryLesson = async (req: Request, res: Response): Promise<any> => {
@@ -64,7 +65,12 @@ export const generateFullStoryLesson = async (req: Request, res: Response): Prom
         });
 
         const results = await Promise.all(generationTasks);
-
+        let subscriptionRequired = false
+            const subs = await hasActiveSubscription(userId);
+            console.log(subs);
+            if (!subs.valid) {
+              subscriptionRequired = true
+            }
         const generatedModules = results
             .filter((r): r is { modType: ModuleKind; moduleId: string; moduleData: any } => !!r && !!r.moduleData)
             .map(({ modType, moduleId, moduleData }) => {
@@ -72,10 +78,16 @@ export const generateFullStoryLesson = async (req: Request, res: Response): Prom
                     type: modType,
                     module: new mongoose.Types.ObjectId(moduleId),
                 });
-                return {
-                    type: modType as ModuleKind, // ✅ cast it here
+                if (!subs.valid && (modType == "listening" || modType == "speaking")) {
+                    return {type:modType, module:{subscriptionRequired:true,_id:moduleId}}
+        // generatedModules[modType] = { subscriptionRequired: true, _id: moduleData._id, type: modType }
+      }
+                else{
+                    return {
+                    type: modType as ModuleKind,
                     module: moduleData,
                 };
+                }
             });
 
         if (generatedModules.length === 0) {

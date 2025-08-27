@@ -4,6 +4,8 @@ import { ModuleModel } from "../../model/module.model";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 import { SpeakingChatModel } from "../../model/chatHIstory.model";
 import { FeedbackInput } from "../builder.controller";
+import { hasActiveSubscription } from "../../middleware/checkSubscription.middleware";
+import ErrorHandler from "../../utils/ErrorHandler";
 
 
 
@@ -12,9 +14,11 @@ import { FeedbackInput } from "../builder.controller";
 export const getSpeakingTaskLogic = async (
   req: Request
 ): Promise<{ moduleId: string }> => {
+
+  
   const { topic, level, formality, style = 'defaultStyle', language = 'german' } = req.body;
 
- 
+
 
   const prompt = `
 You are a skilled language teacher for foreign language learners. Create a creative, open-ended speaking task for a student at level ${level}.
@@ -103,7 +107,7 @@ Reply **only in JSON format** like this:
 export const generateSpeakingFeedbackHelper = async (
   input: FeedbackInput
 ): Promise<{ feedback: any; moduleId: string }> => {
-  const { moduleId ,language } = input;
+  const { moduleId, language } = input;
 
   if (!moduleId) {
     throw new Error('Missing moduleId');

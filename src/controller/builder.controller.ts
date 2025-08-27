@@ -12,6 +12,7 @@ import { IUser } from '../../types/Database/types';
 import ErrorHandler from '../utils/ErrorHandler';
 import { SpeakingChatModel } from '../model/chatHIstory.model';
 import { SUCCESS } from '../utils/helper';
+import { hasActiveSubscription } from '../middleware/checkSubscription.middleware';
 
 
 export const SUPPORTED_TYPES: ModuleKind[] = ['reading', 'listening', 'writing', 'speaking'];
@@ -63,7 +64,14 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
     });
 
     // Step 2: Generate modules (no try/catch here — let it fail if needed)
+    let subscriptionRequired = false
+    const subs = await hasActiveSubscription(userId);
+    console.log(subs);
+    if (!subs.valid) {
+      subscriptionRequired = true
+    }
     const generationTasks = typesToGenerate.map(async (modType) => {
+
       const generatorFn = generatorMap[modType];
       if (!generatorFn) {
         throw new ErrorHandler(`No generator found for module type: ${modType}`, 500);
@@ -93,6 +101,7 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
         throw new ErrorHandler(`Module not found for type: ${modType}`, 500);
       }
 
+
       return { modType, moduleId, moduleData };
     });
 
@@ -107,7 +116,12 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
         module: new mongoose.Types.ObjectId(moduleId),
       });
 
-      generatedModules[modType] = moduleData;
+      if (!subs.valid && (modType == "listening" || modType == "speaking")) {
+        generatedModules[modType] = { subscriptionRequired: true, _id: moduleData._id, type: modType }
+      }
+      else {
+        generatedModules[modType] = moduleData;
+      }
     });
 
     await scoredLesson.save();
@@ -155,7 +169,7 @@ const feedBackMap: Record<string, FeedbackHelper> = {
 export const generateFeedback = async (req: Request, res: Response): Promise<any> => {
   try {
     const type = req.params.type as 'reading' | 'listening' | 'writing' | 'speaking';
-    const { builderId, answers, paragraph, response, language="german" } = req.body;
+    const { builderId, answers, paragraph, response, language = "german" } = req.body;
 
     const builder = await ScoredLessonModel.findById(builderId);
     if (!builder) {
@@ -196,6 +210,15 @@ export const generateFeedback = async (req: Request, res: Response): Promise<any
 export const getModuleByBuilderAndType = async (req: Request, res: Response): Promise<any> => {
   try {
     const { builderId, type } = req.params;
+    let subscriptionRequired = false
+    const userId=req.userId
+    const subs = await hasActiveSubscription(userId);
+    console.log(subs);
+    if (!subs.valid) {
+      subscriptionRequired = true
+    }
+   
+
 
     const builder = await ScoredLessonModel.findById(builderId);
     if (!builder) {
@@ -211,11 +234,24 @@ export const getModuleByBuilderAndType = async (req: Request, res: Response): Pr
     if (!module) {
       throw new ErrorHandler('Module not found.', 404);
     }
+     if(subscriptionRequired && (type=="listening" || type=="speaking")){
+      return res.status(200).json({
+      success: true,
+      data: {
+        title: builder.topic,
+        moduleId: module._id,
+        type,
+        module:{
+          subscriptionRequired: true, _id: module._id, type: module.type
+        },
+      }
+    });
+    }
 
     return res.status(200).json({
       success: true,
       data: {
-        title:builder.topic,
+        title: builder.topic,
         moduleId: module._id,
         type,
         module,
@@ -321,12 +357,12 @@ export const linkUserWithBuilder = async (req: Request, res: Response): Promise<
       await builder.save();
     }
 
-    return res.status(200).json({ data:{message: 'User and Builder linked successfully'}, success:true});
+    return res.status(200).json({ data: { message: 'User and Builder linked successfully' }, success: true });
 
   } catch (error: any) {
     console.error('Error linking user with builder:', error);
     const status = error instanceof ErrorHandler ? error.statusCode : 500;
-    return res.status(status).json({ error: error.message || 'Internal Server Error'  ,success:false});
+    return res.status(status).json({ error: error.message || 'Internal Server Error', success: false });
   }
 };
 
@@ -345,19 +381,19 @@ export const getAllUserLessons = async (req: Request, res: Response): Promise<an
 
     const user = await User.findById(userId);
 
-    if (!user ) {
+    if (!user) {
       throw new ErrorHandler('User not found', 404);
     }
 
     const lessonIds = user.lessons.map((lesson) => lesson.moduleId);
     const lessons = await ScoredLessonModel.find({ _id: { $in: lessonIds } });
 
-    return res.status(200).json({ data :lessons, success:true });
+    return res.status(200).json({ data: lessons, success: true });
 
   } catch (error: any) {
     console.error('Error fetching user lessons:', error);
     const status = error instanceof ErrorHandler ? error.statusCode : 500;
-    return res.status(status).json({ error: error.message || 'Internal Server Error' ,success:false});
+    return res.status(status).json({ error: error.message || 'Internal Server Error', success: false });
   }
 };
 

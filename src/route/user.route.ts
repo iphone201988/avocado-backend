@@ -14,5 +14,6 @@ userRouter.post("/resend-otp",validate(userSchema.resendOtpSchema),userControlle
 userRouter.post("/verify-otp",validate(userSchema.verifyOtpSchema),userController.verifyOtp);
 userRouter.post("/reset-password",validate(userSchema.resetPasswordSchema),authenticationMiddleware,userController.resetPassword);
 userRouter.get("/get-user",authenticationMiddleware,userController.getUser)
+userRouter.put("/update",authenticationMiddleware,userController.updateUserProfile)
 
 export default userRouter;

@@ -69,4 +69,5 @@ export interface ScoredLessonDocument extends Document {
     createdAt: Date;
     updatedAt: Date;
     chatId:Types.ObjectId
+    subscriptionRequired:boolean
   }
