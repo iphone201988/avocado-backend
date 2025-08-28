@@ -32,7 +32,7 @@ app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")))
 
 
 
-app.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
+app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, res:any) => {
   let event;
 
   const sig = req.headers["stripe-signature"];
