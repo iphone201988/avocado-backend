@@ -31,7 +31,8 @@
     "nodemailer": "^6.9.16",
     "openai": "^5.8.2",
     "otp-generator": "^4.0.1",
-    "stripe": "^18.4.0"
+    "stripe": "^18.4.0",
+    "undici": "^6.21.3"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",

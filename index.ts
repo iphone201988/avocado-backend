@@ -33,7 +33,7 @@ app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")))
 
 
 app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, res:any) => {
-  let event;
+  let event:any;
 
   const sig = req.headers["stripe-signature"];
 
@@ -81,7 +81,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
     }
 
     case "customer.subscription.created": {
-      const subscription = event.data.object as Stripe.Subscription;
+      const subscription:any = event.data.object ;
       console.log("📅 Subscription created:", subscription.id);
 
       // Upsert subscription
@@ -106,7 +106,8 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
       break;
     }
     case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
+      const 
+      subscription = event.data.object ;
       console.log("🔄 Subscription updated:", subscription.id);
 
       await subscriptionModel.findOneAndUpdate(
@@ -128,7 +129,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
 
  
     case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
+      const subscription = event.data.object ;
       console.log("❌ Subscription canceled:", subscription.id);
 
       const sub = await subscriptionModel.findOneAndUpdate(
@@ -149,7 +150,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
     }
          
      case "invoice.payment_succeeded": {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object ;
         console.log("💰 Invoice paid:", invoice.id);
 
         await subscriptionModel.findOneAndUpdate(
@@ -165,7 +166,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
       }
 
       case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object;
         console.log("⚠️ Invoice payment failed:", invoice.id);
 
         await subscriptionModel.findOneAndUpdate(

@@ -9,7 +9,7 @@ export const hasActiveSubscription = async (userId: string) => {
       return { valid: false, reason: "No active subscription found" };
     }
 
-    const subscription = await subscriptionModel.find({stripeSubscriptionId:user.subscriptionId});
+    const subscription :any = await subscriptionModel.find({stripeSubscriptionId:user.subscriptionId});
     console.log("subscription..",subscription)
     if (!subscription) {
       return { valid: false, reason: "Subscription not found" };

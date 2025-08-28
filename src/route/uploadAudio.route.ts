@@ -4,7 +4,7 @@ import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import { File } from "node:buffer";
-globalThis.File = File;
+globalThis.File = File as any;
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ const upload = multer({ storage });
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-router.post("/speaking", upload.single("audio"), async (req, res) => {
+router.post("/speaking", upload.single("audio"), async (req:any, res:any) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: "No audio file uploaded" });
   }
