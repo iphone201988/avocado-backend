@@ -22,12 +22,12 @@ app.use(cors());
 
 
 
-app.get("/success", (req: Request, res: Response) => {
- app.get("/success", (req: Request, res: Response) => {
-  app.use(express.static(path.resolve("src/public")));
+// app.get("/success", (req: Request, res: Response) => {
+//  app.get("/success", (req: Request, res: Response) => {
+//   app.use(express.static(path.resolve("src/public")));
 
-});
-});
+// });
+// });
 
 const options = {
   key: fs.readFileSync(path.resolve(__dirname, "../ssl/private.key"), 'utf8'),
@@ -203,7 +203,7 @@ app.use(express.json());
 
 
 
-const app2 = express();
+// const app2 = express();
 
 app.use("/api/v1", router);
 
