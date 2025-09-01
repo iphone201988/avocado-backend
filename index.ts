@@ -12,20 +12,34 @@ import bodyParser from "body-parser";
 import User from "./src/model/user.model";
 import subscriptionModel from "./src/model/subscription.model";
 import userSchema from "./src/schema/user.schema";
+import fs from 'fs';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+import https from "https";
 const app = express();
 
 app.use(morgan("tiny"));
 app.use(cors());
+
+
+
 app.get("/success", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "..", "src", "public", "success.html"));
+ app.get("/success", (req: Request, res: Response) => {
+  app.use(express.static(path.resolve("src/public")));
+
 });
+});
+
+const options = {
+  key: fs.readFileSync(path.resolve(__dirname, "../ssl/private.key"), 'utf8'),
+  cert: fs.readFileSync(path.resolve(__dirname, "../ssl/certificate.crt"), 'utf8'),
+  ca: fs.readFileSync(path.resolve(__dirname, "../ssl/ca_bundle.crt"), 'utf8'),
+};
 
 app.get("/cancel", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "src", "public", "cancel.html"));
 });
 
-const endpointSecret = 'whsec_6ba9c8483a8d9ac1960aeb94f5af876030579f26d6d8e83e55a3c7b172ec3130';
+const endpointSecret = 'whsec_G75r8cf4gc821pfAw8GZRD86zryv0OKG';
 
 app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")));
 
@@ -199,8 +213,10 @@ app.use(errorMiddleware);
 connectToDB()
   .then(() => {
     console.log("Connected to DB successfully", process.env.MONGO_URI);
-    app.listen(process.env.PORT, () => {
-      console.log(`Server is running on port: ${process.env.PORT}`);
+
+    // Create HTTPS server
+    https.createServer(options, app).listen(process.env.PORT, () => {
+      console.log(`🚀 HTTPS Server is running on port: ${process.env.PORT}`);
     });
   })
   .catch((error) => {
