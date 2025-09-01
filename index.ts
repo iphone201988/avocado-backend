@@ -43,7 +43,6 @@ const endpointSecret = 'whsec_G75r8cf4gc821pfAw8GZRD86zryv0OKG';
 
 app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")));
 
-app.use(express.json());
 
 
 
@@ -200,6 +199,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
 });
 
 
+app.use(express.json());
 
 
 
