@@ -10,9 +10,9 @@ import { generateSpeakingFeedbackHelper, getSpeakingTaskLogic } from './skill_Bu
 import User from '../model/user.model';
 import { IUser } from '../../types/Database/types';
 import ErrorHandler from '../utils/ErrorHandler';
-import { SpeakingChatModel } from '../model/chatHIstory.model';
 import { SUCCESS } from '../utils/helper';
 import { hasActiveSubscription } from '../middleware/checkSubscription.middleware';
+import { SpeakingSessionModel } from '../model/speakingSession.model';
 
 
 export const SUPPORTED_TYPES: ModuleKind[] = ['reading', 'listening', 'writing', 'speaking'];
@@ -449,7 +449,7 @@ export const getSpeakingChatByBuilderId = async (req: Request, res: Response): P
 
     const moduleId = speakingModuleEntry.module.toString();
 
-    const chat = await SpeakingChatModel.findOne({ moduleId, userId }).lean();
+    const chat = await SpeakingSessionModel.findOne({ moduleId, userId }).lean();
     if (!chat || !chat.messages || chat.messages.length === 0) {
       return res.status(200).json({ messages: [], total: 0, page, totalPages: 0 });
     }

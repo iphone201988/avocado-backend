@@ -2,7 +2,7 @@ import express from "express";
 import { generateAndStoreModule, generateFeedback, getAllUserLessons, getBuilderById, getModuleByBuilderAndType, getSpeakingChatByBuilderId, linkUserWithBuilder, unlinkUserWithBuilder } from "../controller/builder.controller";
 import { authenticationMiddleware } from "../middleware/auth.middleware";
 import { getWordOrSentenceInsights } from "../controller/skill_Builder/listeningModule.controller";
-import { chatWithSpeakingModule, getSpeakingChatMessages } from "../controller/skill_Builder/chatHIstory.controller";
+// import { chatWithSpeakingModule, getSpeakingChatMessages } from "../controller/skill_Builder/chatHIstory.controller";
 import validate from "../middleware/validate.middleware";
 import { chatWithSpeakingModuleSchema, generateAndStoreModuleSchema, generateFeedbackSchema, generateFullStoryLessonSchema, getBuilderByIdSchema, getModuleByBuilderAndTypeSchema, getSpeakingChatByBuilderIdSchema, getWordOrSentenceInsightsSchema, linkUserWithBuilderSchema } from "../schema/module.schema";
 import { generateFullStoryLesson } from "../controller/story.controller";
@@ -18,7 +18,7 @@ moduleRouter.post("/unsave/module",authenticationMiddleware,validate(linkUserWit
 moduleRouter.get("/get-lessons",authenticationMiddleware,getAllUserLessons)
 moduleRouter.post("/:type",authenticationMiddleware,validate(generateAndStoreModuleSchema),generateAndStoreModule);
 moduleRouter.get("/:builderId/:type",authenticationMiddleware,validate(getModuleByBuilderAndTypeSchema),getModuleByBuilderAndType)
-moduleRouter.post("/chat/:moduleId",authenticationMiddleware,validate(chatWithSpeakingModuleSchema),chatWithSpeakingModule)
+// moduleRouter.post("/chat/:moduleId",authenticationMiddleware,validate(chatWithSpeakingModuleSchema),chatWithSpeakingModule)
 
 export default moduleRouter;
 

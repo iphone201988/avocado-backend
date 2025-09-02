@@ -2,10 +2,10 @@ import OpenAI from "openai";
 import { Request, Response } from 'express';
 import { ModuleModel } from "../../model/module.model";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-import { SpeakingChatModel } from "../../model/chatHIstory.model";
 import { FeedbackInput } from "../builder.controller";
 import { hasActiveSubscription } from "../../middleware/checkSubscription.middleware";
 import ErrorHandler from "../../utils/ErrorHandler";
+import { SpeakingSessionModel } from "../../model/speakingSession.model";
 
 
 
@@ -83,15 +83,8 @@ Reply **only in JSON format** like this:
     comprehension: null,
   });
 
-  const newChat = await SpeakingChatModel.create({
+  const newChat = await SpeakingSessionModel.create({
     moduleId: newModule._id,
-    messages: [
-      {
-        role: 'assistant',
-        content: data.prompt,
-        timestamp: new Date(),
-      },
-    ],
   });
 
   newModule.chatId = newChat._id;
@@ -118,14 +111,14 @@ export const generateSpeakingFeedbackHelper = async (
     throw new Error('Speaking module not found.');
   }
 
-  const chat = await SpeakingChatModel.findOne({ moduleId }).lean();
+  const chat = await SpeakingSessionModel.findOne({ moduleId }).lean();
   if (!chat || !chat.messages || chat.messages.length === 0) {
     throw new Error('No chat history found for this module.');
   }
 
   const conversation = chat.messages
-    .map((msg) => `${msg.role === 'user' ? '🧑' : '🤖'} ${msg.content}`)
-    .join('\n');
+    // .map((msg) => `${msg.role === 'user' ? '🧑' : '🤖'} ${msg.content}`)
+    // .join('\n');
 
   const prompt = `
 You are a professional ${language} language evaluator.

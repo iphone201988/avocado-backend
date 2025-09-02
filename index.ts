@@ -15,6 +15,12 @@ import userSchema from "./src/schema/user.schema";
 import fs from 'fs';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 import https from "https";
+import { File } from "node:buffer";
+
+// Polyfill for Node 18
+if (!globalThis.File) {
+  (globalThis as any).File = File;
+}
 const app = express();
 
 app.use(morgan("tiny"));
@@ -43,8 +49,9 @@ const endpointSecret = 'whsec_G75r8cf4gc821pfAw8GZRD86zryv0OKG';
 
 app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")));
 
+app.use(express.json());
 
-
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, res:any) => {
   let event:any;
@@ -199,7 +206,6 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
 });
 
 
-app.use(express.json());
 
 
 
