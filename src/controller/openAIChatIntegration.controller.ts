@@ -18,7 +18,7 @@ export const handleSpeaking = async (req: any, res: Response): Promise<any> => {
   try {
     // --- Step 1: Transcribe user audio ---
     const transcriptionRes = await client.audio.transcriptions.create({
-      model: "gpt-4o-mini-transcribe",
+      model: "whisper-1",  // ✅ correct model
       file: fs.createReadStream(filePath),
     });
     const userText = transcriptionRes.text.trim();
@@ -27,11 +27,11 @@ export const handleSpeaking = async (req: any, res: Response): Promise<any> => {
     // --- Step 2: Fetch session for context ---
     let session = await SpeakingSessionModel.findOne({ moduleId, userId });
 
-    const history:any = session
+    const history: any = session
       ? session.messages.map((m) => [
-          { role: "user", content: m.user.transcription },
-          { role: "assistant", content: m.assistant.content },
-        ]).flat()
+        { role: "user", content: m.user.transcription },
+        { role: "assistant", content: m.assistant.content },
+      ]).flat()
       : [];
 
     // --- Step 3: Generate structured feedback (only latest message) ---
