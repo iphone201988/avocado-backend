@@ -206,6 +206,7 @@ app.get("/cancel", (req, res) => {
 
 
 app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")));
+app.use("/public", express.static(path.join(__dirname, "../public")));
 
 
 

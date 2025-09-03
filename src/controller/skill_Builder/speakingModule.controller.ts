@@ -15,7 +15,7 @@ export const getSpeakingTaskLogic = async (
   req: Request
 ): Promise<{ moduleId: string }> => {
 
-  
+
   const { topic, level, formality, style = 'defaultStyle', language = 'german' } = req.body;
 
 
@@ -99,7 +99,7 @@ Reply **only in JSON format** like this:
 
 export const generateSpeakingFeedbackHelper = async (
   input: FeedbackInput
-): Promise<{ feedback: any; moduleId: string }> => {
+): Promise<{ feedback: any; moduleId: string,conversation:any }> => {
   const { moduleId, language } = input;
 
   if (!moduleId) {
@@ -110,15 +110,41 @@ export const generateSpeakingFeedbackHelper = async (
   if (!module || module.type !== 'speaking') {
     throw new Error('Speaking module not found.');
   }
+  console.log("module:", module);
 
   const chat = await SpeakingSessionModel.findOne({ moduleId }).lean();
+  console.log("chat.....", chat);
   if (!chat || !chat.messages || chat.messages.length === 0) {
     throw new Error('No chat history found for this module.');
   }
 
+  // --- Calculate average feedback scores ---
+  let totals = { relevance: 0, vocabulary: 0, fluency: 0, pronunciation: 0, structure: 0 };
+  let count = 0;
+
+  chat.messages.forEach((msg: any) => {
+    if (msg.feedback) {
+      totals.relevance += msg.feedback.relevance || 0;
+      totals.vocabulary += msg.feedback.vocabulary || 0;
+      totals.fluency += msg.feedback.fluency || 0;
+      totals.pronunciation += msg.feedback.pronunciation || 0;
+      totals.structure += msg.feedback.structure || 0;
+      count++;
+    }
+  });
+
+  const avgScores = Object.fromEntries(
+    Object.entries(totals).map(([k, v]) => [k, count ? v / count : 0])
+  );
+
+  // --- Build conversation transcript ---
   const conversation = chat.messages
-    // .map((msg) => `${msg.role === 'user' ? '🧑' : '🤖'} ${msg.content}`)
-    // .join('\n');
+    .map((msg: any) => {
+      const userPart = msg.user?.transcription ? `🧑 ${msg.user.transcription}` : '';
+      const assistantPart = msg.assistant?.content ? `🤖 ${msg.assistant.content}` : '';
+      return [userPart, assistantPart].filter(Boolean).join('\n');
+    })
+    .join('\n\n');
 
   const prompt = `
 You are a professional ${language} language evaluator.
@@ -129,7 +155,8 @@ A student has completed the following speaking task:
 Below is the complete conversation between the student and the AI assistant:
 ${conversation}
 
-Evaluate the student's performance.
+Evaluate the student's performance qualitatively. 
+Do NOT generate numeric scores — they are already calculated separately.
 
 Return feedback in this strict JSON format ONLY:
 {
@@ -138,7 +165,9 @@ Return feedback in this strict JSON format ONLY:
     "Pronunciation": "Mostly clear, but watch out for 'r' sounds.",
     "Fluency": "Good, some hesitations when searching for vocabulary.",
     "Grammar": "Generally correct, minor errors in sentence structure.",
-    "Response Relevance": "Stayed on topic and answered questions well."
+    "Response Relevance": "Stayed on topic and answered questions well.",
+    "Vocabulary": "Used appropriate vocabulary, but limited range.",
+    "Structure": "Sentences were generally well-formed, some errors present."
   },
   "Tips": [
     "Practice common linking phrases to improve flow.",
@@ -146,17 +175,14 @@ Return feedback in this strict JSON format ONLY:
     "Focus on intonation to sound more natural."
   ]
 }
-
-Do NOT include any explanation or extra text outside the JSON object.
 `.trim();
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-5',
-    // temperature: 0.7,
     messages: [
       {
         role: 'system',
-        content: 'You are a structured evaluator of ${language} speaking tasks. Respond only in strict JSON.',
+        content: `You are a structured evaluator of ${language} speaking tasks. Respond only in strict JSON.`,
       },
       {
         role: 'user',
@@ -178,11 +204,15 @@ Do NOT include any explanation or extra text outside the JSON object.
     throw new Error('Invalid JSON returned by AI.');
   }
 
+  // Attach calculated averages to the feedback
+  feedback.Scores = avgScores;
+
   module.aiFeedback = feedback;
   await module.save();
 
   return {
     moduleId: module._id.toString(),
-    feedback,
+    feedback,conversation
+    
   };
 };

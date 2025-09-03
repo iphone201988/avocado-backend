@@ -3,6 +3,7 @@ import fs from "fs";
 import OpenAI from "openai";
 import { SpeakingSessionModel } from "../model/speakingSession.model";
 import path from "path";
+import { ModuleModel } from "../model/module.model";
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -26,7 +27,8 @@ export const handleSpeaking = async (req: any, res: Response): Promise<any> => {
 
     // --- Step 2: Fetch session for context ---
     let session = await SpeakingSessionModel.findOne({ moduleId, userId });
-
+    let moduleData = await ModuleModel.findById(moduleId).lean();
+    console.log(moduleData)
     const history: any = session
       ? session.messages.map((m) => [
         { role: "user", content: m.user.transcription },
@@ -40,7 +42,19 @@ export const handleSpeaking = async (req: any, res: Response): Promise<any> => {
       messages: [
         {
           role: "system",
-          content: `You are a strict evaluator. Analyze ONLY the user's latest response and return JSON scores (1–5) for each category.
+          content: `You are a strict evaluator. The user is completing a speaking task.
+
+Task details:
+${JSON.stringify(moduleData, null, 2)}
+
+Analyze ONLY the user's latest response in relation to the task above.
+Return JSON scores (1–5) for each category:
+
+- relevance: How well the response addresses the given task/topic
+- vocabulary: Appropriateness and richness of word choice
+- fluency: Natural flow and ease of expression
+- pronunciation: Clarity and correctness of speech (based on transcription clues)
+- structure: Organization and coherence of the response
 
 Return ONLY valid JSON in this format:
 {
@@ -55,6 +69,7 @@ Return ONLY valid JSON in this format:
       ],
       response_format: { type: "json_object" },
     });
+
 
     const feedback = JSON.parse(feedbackRes.choices[0].message?.content || "{}");
 

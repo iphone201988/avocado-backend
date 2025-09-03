@@ -155,14 +155,14 @@ export type FeedbackInput = {
   language: string;
 };
 
-type FeedbackHelper = (input: FeedbackInput) => Promise<{ feedback: any; moduleId: string }>;
+  type FeedbackHelper = (input: FeedbackInput) => Promise<{ feedback: any; moduleId: string ,conversation?: any; }>;
 
-const feedBackMap: Record<string, FeedbackHelper> = {
-  reading: generateReadingFeedbackHelper,
-  listening: generateListeningFeedbackHelper,
-  writing: generateWritingFeedbackHelper,
-  speaking: generateSpeakingFeedbackHelper,
-};
+  const feedBackMap: Record<string, FeedbackHelper> = {
+    reading: generateReadingFeedbackHelper,
+    listening: generateListeningFeedbackHelper,
+    writing: generateWritingFeedbackHelper,
+    speaking: generateSpeakingFeedbackHelper,
+  };
 
 
 
