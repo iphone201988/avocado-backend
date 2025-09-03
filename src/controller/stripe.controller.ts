@@ -52,8 +52,8 @@ export const stripeController = async (req, res) => {
         },
       ],
       customer: user.stripeId,
-      success_url: "https://16.170.13.143:8002/public/success.html",
-      cancel_url: "https://16.170.13.143:8002/public/cancel.html",
+      success_url: "https://16.170.13.143:8000/public/success.html",
+      cancel_url: "https://16.170.13.143:8000/public/cancel.html",
     });
     console.log(session)
 
