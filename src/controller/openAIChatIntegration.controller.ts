@@ -26,7 +26,7 @@ export const handleSpeaking = async (req: any, res: Response): Promise<any> => {
     console.log(userText)
 
     // --- Step 2: Fetch session for context ---
-    let session = await SpeakingSessionModel.findOne({ moduleId, userId });
+    let session = await SpeakingSessionModel.findOne({ moduleId });
     let moduleData = await ModuleModel.findById(moduleId).lean();
     console.log(moduleData)
     const history: any = session
