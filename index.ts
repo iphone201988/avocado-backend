@@ -21,37 +21,14 @@ import { File } from "node:buffer";
 if (!globalThis.File) {
   (globalThis as any).File = File;
 }
+
+
+
+
+
+
 const app = express();
-
-app.use(morgan("tiny"));
-app.use(cors());
-
-
-
-// app.get("/success", (req: Request, res: Response) => {
-//  app.get("/success", (req: Request, res: Response) => {
-//   app.use(express.static(path.resolve("src/public")));
-
-// });
-// });
-
-const options = {
-  key: fs.readFileSync(path.resolve(__dirname, "../ssl/private.key"), 'utf8'),
-  cert: fs.readFileSync(path.resolve(__dirname, "../ssl/certificate.crt"), 'utf8'),
-  ca: fs.readFileSync(path.resolve(__dirname, "../ssl/ca_bundle.crt"), 'utf8'),
-};
-
-app.get("/cancel", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "src", "public", "cancel.html"));
-});
-
 const endpointSecret = 'whsec_G75r8cf4gc821pfAw8GZRD86zryv0OKG';
-
-app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")));
-
-app.use(express.json());
-
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, res:any) => {
   let event:any;
@@ -205,7 +182,38 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
   res.json({ received: true });
 });
 
+app.use(morgan("tiny"));
+app.use(cors());
 
+
+
+// app.get("/success", (req: Request, res: Response) => {
+//  app.get("/success", (req: Request, res: Response) => {
+//   app.use(express.static(path.resolve("src/public")));
+
+// });
+// });
+
+const options = {
+  key: fs.readFileSync(path.resolve(__dirname, "../ssl/private.key"), 'utf8'),
+  cert: fs.readFileSync(path.resolve(__dirname, "../ssl/certificate.crt"), 'utf8'),
+  ca: fs.readFileSync(path.resolve(__dirname, "../ssl/ca_bundle.crt"), 'utf8'),
+};
+
+app.get("/cancel", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "src", "public", "cancel.html"));
+});
+
+
+app.use("/uploads/audio", express.static(path.join(__dirname, "uploads/audio")));
+
+
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+
+
+app.use(express.json());
 
 
 
