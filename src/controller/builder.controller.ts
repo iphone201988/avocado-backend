@@ -183,17 +183,18 @@ export const generateFeedback = async (req: Request, res: Response): Promise<any
 
     const moduleId = moduleEntry.module.toString();
     const feedbackFn = feedBackMap[type];
+    
 
     if (!feedbackFn) {
       throw new ErrorHandler(`No feedback function defined for type ${type}`, 400);
     }
 
     const input: FeedbackInput = { moduleId, answers, paragraph, response, language };
-    const { feedback } = await feedbackFn(input);
+    const { feedback ,conversation} = await feedbackFn(input);
 
     return res.status(200).json({
       success: true, data: {
-        moduleId, feedback
+        moduleId, feedback ,conversation
       }
     });
 

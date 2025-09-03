@@ -99,7 +99,7 @@ Reply **only in JSON format** like this:
 
 export const generateSpeakingFeedbackHelper = async (
   input: FeedbackInput
-): Promise<{ feedback: any; moduleId: string,conversation:any }> => {
+): Promise<{ feedback: any; moduleId: string}> => {
   const { moduleId, language } = input;
 
   if (!moduleId) {
@@ -210,9 +210,17 @@ Return feedback in this strict JSON format ONLY:
   module.aiFeedback = feedback;
   await module.save();
 
+  const messages = chat.messages.map((msg: any) => {
+    return {
+      user: msg.user?.transcription || null,
+      assistant: msg.assistant?.content || null,
+      feedback: msg.feedback || null, // optional: attach per-turn feedback
+    };
+  });
+
   return {
     moduleId: module._id.toString(),
-    feedback,conversation
+    feedback:{...feedback,messages}
     
   };
 };
