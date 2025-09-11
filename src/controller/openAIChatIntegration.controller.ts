@@ -19,6 +19,7 @@ export const handleSpeaking = async (req: any, res: Response): Promise<any> => {
   try {
     // --- Step 1: Transcribe user audio ---
     console.log("line21")
+    console.log("file......",fs.createReadStream(filePath))
     const transcriptionRes = await client.audio.transcriptions.create({
       model: "whisper-1",  // ✅ correct model
       file: fs.createReadStream(filePath),
