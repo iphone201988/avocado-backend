@@ -16,6 +16,7 @@ import fs from 'fs';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 import https from "https";
 import { File } from "node:buffer";
+import http from "http";
 
 // Polyfill for Node 18
 if (!globalThis.File) {
@@ -30,8 +31,8 @@ if (!globalThis.File) {
 const app = express();
 const endpointSecret = 'whsec_G75r8cf4gc821pfAw8GZRD86zryv0OKG';
 
-app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, res:any) => {
-  let event:any;
+app.post("/webhook", express.raw({ type: "application/json" }), async (req: any, res: any) => {
+  let event: any;
 
   const sig = req.headers["stripe-signature"];
 
@@ -53,12 +54,12 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
       const stripeSubscriptionId = session.subscription as string;
 
       // Find the user by stripeCustomerId
-      const user = await User.findOne({ stripeId:stripeCustomerId });
+      const user = await User.findOne({ stripeId: stripeCustomerId });
       if (!user) break;
 
       // Check if user already has a subscription
       let existingSub = await subscriptionModel.findOne({
-      stripeSubscriptionId
+        stripeSubscriptionId
       });
 
       if (!existingSub) {
@@ -70,16 +71,16 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
           status: "incomplete", // until Stripe confirms
         });
 
-        
+
       }
       user.subscriptionId = existingSub.stripeSubscriptionId;
-        await user.save();
+      await user.save();
 
       break;
     }
 
     case "customer.subscription.created": {
-      const subscription:any = event.data.object ;
+      const subscription: any = event.data.object;
       console.log("📅 Subscription created:", subscription.id);
 
       // Upsert subscription
@@ -104,8 +105,8 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
       break;
     }
     case "customer.subscription.updated": {
-      const 
-      subscription = event.data.object ;
+      const
+        subscription = event.data.object;
       console.log("🔄 Subscription updated:", subscription.id);
 
       await subscriptionModel.findOneAndUpdate(
@@ -125,9 +126,9 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
     }
 
 
- 
+
     case "customer.subscription.deleted": {
-      const subscription = event.data.object ;
+      const subscription = event.data.object;
       console.log("❌ Subscription canceled:", subscription.id);
 
       const sub = await subscriptionModel.findOneAndUpdate(
@@ -146,33 +147,33 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req:any, 
 
       break;
     }
-         
-     case "invoice.payment_succeeded": {
-        const invoice = event.data.object ;
-        console.log("💰 Invoice paid:", invoice.id);
 
-        await subscriptionModel.findOneAndUpdate(
-          { stripeSubscriptionId: invoice.subscription as string },
-          {
-            currentPeriodEnd: new Date(
-              invoice.lines.data[0].period.end * 1000
-            ),
-            status: "active",
-          }
-        );
-        break;
-      }
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object;
+      console.log("💰 Invoice paid:", invoice.id);
 
-      case "invoice.payment_failed": {
-        const invoice = event.data.object;
-        console.log("⚠️ Invoice payment failed:", invoice.id);
+      await subscriptionModel.findOneAndUpdate(
+        { stripeSubscriptionId: invoice.subscription as string },
+        {
+          currentPeriodEnd: new Date(
+            invoice.lines.data[0].period.end * 1000
+          ),
+          status: "active",
+        }
+      );
+      break;
+    }
 
-        await subscriptionModel.findOneAndUpdate(
-          { stripeSubscriptionId: invoice.subscription as string },
-          { status: "past_due" }
-        );
-        break;
-      }
+    case "invoice.payment_failed": {
+      const invoice = event.data.object;
+      console.log("⚠️ Invoice payment failed:", invoice.id);
+
+      await subscriptionModel.findOneAndUpdate(
+        { stripeSubscriptionId: invoice.subscription as string },
+        { status: "past_due" }
+      );
+      break;
+    }
     default:
       console.log(`ℹ️ Unhandled event type: ${event.type}`);
   }
@@ -230,8 +231,12 @@ connectToDB()
     console.log("Connected to DB successfully", process.env.MONGO_URI);
 
     // Create HTTPS server
-    https.createServer(options, app).listen(process.env.PORT, () => {
-      console.log(`🚀 HTTPS Server is running on port: ${process.env.PORT}`);
+    http.createServer(app).listen(8000, () => {
+      console.log("HTTP Server on 8000");
+    });
+
+    https.createServer(options, app).listen(8002, () => {
+      console.log("HTTPS Server on 8002");
     });
   })
   .catch((error) => {
