@@ -18,12 +18,16 @@ export const handleSpeaking = async (req: any, res: Response): Promise<any> => {
 
   try {
     // --- Step 1: Transcribe user audio ---
+    console.log("line21")
     const transcriptionRes = await client.audio.transcriptions.create({
       model: "whisper-1",  // ✅ correct model
       file: fs.createReadStream(filePath),
     });
+    console.log("line22")
     const userText = transcriptionRes.text.trim();
+    console.log("line28")
     console.log(userText)
+    console.log("line 30")
 
     // --- Step 2: Fetch session for context ---
     let session = await SpeakingSessionModel.findOne({ moduleId });
