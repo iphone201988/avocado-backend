@@ -231,11 +231,11 @@ connectToDB()
     console.log("Connected to DB successfully", process.env.MONGO_URI);
 
     // Create HTTPS server
-    http.createServer(app).listen(8000, () => {
+    http.createServer(app).listen(8002, () => {
       console.log("HTTP Server on 8000");
     });
 
-    https.createServer(options, app).listen(8002, () => {
+    https.createServer(options, app).listen(8000, () => {
       console.log("HTTPS Server on 8002");
     });
   })
