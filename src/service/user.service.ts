@@ -11,5 +11,5 @@ export const findUserBySocialId = async (id: string, provider: number) => await 
 });
 
 export const userData = (user: any) => {
-  return { _id: user._id, email: user.email,name:user?.name || "" , bio:user?.bio||""}
+  return { _id: user._id, email: user.email,name:user?.name || "" , bio:user?.bio||"",preferredLanguage:user?.preferredLanguage}
 };
