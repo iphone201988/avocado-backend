@@ -10,16 +10,16 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
     try {
         const { socialId, provider, email, deviceToken, deviceType } = req.body;
         let user = await findUserBySocialId(socialId, provider);
-        const lowercaseEmail=email?.toLowerCase();
+        const lowercaseEmail = email?.toLowerCase();
         if (!user) {
             user = await findUserByEmail(lowercaseEmail);
-            
+
 
             if (user) {
                 user.socialLinkedAccounts.push({ provider, id: socialId });
             } else {
                 user = new User({
-                    email:lowercaseEmail,
+                    email: lowercaseEmail,
                     socialLinkedAccounts: [{ provider, id: socialId }],
                     deviceToken,
                     deviceType,
@@ -48,7 +48,7 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, password, deviceToken, deviceType } = req.body;
-        const lowercaseEmail=email?.toLowerCase();
+        const lowercaseEmail = email?.toLowerCase();
         const existingUser = await findUserByEmail(lowercaseEmail);
         if (existingUser) {
             return next(new ErrorHandler("User already exists with this email", 400));
@@ -58,7 +58,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         // const jti = generateRandomString(10);
 
         const newUser = new User({
-            email:lowercaseEmail,
+            email: lowercaseEmail,
             password: hashedPassword,
             deviceToken,
             deviceType,
@@ -81,14 +81,14 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, password, deviceToken, deviceType } = req.body;
-        const lowercaseEmail=email?.toLowerCase();
+        const lowercaseEmail = email?.toLowerCase();
         const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid credentials. Please try again.", 401));
         }
 
         const isMatch = await comparePassword(password, user.password);
-        
+
         if (!isMatch) {
             return next(new ErrorHandler("Invalid credentials. Please try again.", 401));
         }
@@ -115,7 +115,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 export const forgetPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email } = req.body;
-        const lowercaseEmail=email?.toLowerCase();
+        const lowercaseEmail = email?.toLowerCase();
         const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
@@ -142,7 +142,7 @@ export const forgetPassword = async (req: Request, res: Response, next: NextFunc
 const verifyOtp = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, otp } = req.body;
-        const lowercaseEmail=email?.toLowerCase();
+        const lowercaseEmail = email?.toLowerCase();
         const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
@@ -181,7 +181,7 @@ const verifyOtp = async (req: Request, res: Response, next: NextFunction): Promi
 const resendOtp = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email } = req.body;
-        const lowercaseEmail=email?.toLowerCase();
+        const lowercaseEmail = email?.toLowerCase();
         const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
@@ -214,7 +214,7 @@ const resendOtp = async (req: Request, res: Response, next: NextFunction): Promi
 const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, password } = req.body;
-        const lowercaseEmail=email?.toLowerCase();
+        const lowercaseEmail = email?.toLowerCase();
         const user = await findUserByEmail(lowercaseEmail);
         if (!user) {
             return next(new ErrorHandler("Invalid email", 401));
@@ -247,72 +247,149 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction): P
 
 export const getUser = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const userId = req.user?.id;
-  
-      if (!userId) {
-        return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
-      }
-  
-      const user = await findUserById(userId);
-  
-      if (!user) {
-        return next(new ErrorHandler("User not found", 404));
-      }
-      const subscription=await subscriptionModel.find({stripeSubscriptionId:user.subscriptionId}).lean()
-      console.log(user.subscriptionId)
-      return SUCCESS(res, 200, "User details fetched successfully", {
-        user: userData(user),subscription
-      });
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
+        }
+
+        const user = await findUserById(userId);
+
+        if (!user) {
+            return next(new ErrorHandler("User not found", 404));
+        }
+        const subscription = await subscriptionModel.find({ stripeSubscriptionId: user.subscriptionId }).lean()
+        console.log(user.subscriptionId)
+        return SUCCESS(res, 200, "User details fetched successfully", {
+            user: userData(user), subscription
+        });
     } catch (error) {
-      next(error);
+        next(error);
     }
-  };
-
-
-
-  export const updateUserProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<any> => {
-  try {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
-    }
-
-    const { name, bio } = req.body;
-
-    if (!name && !bio) {
-      return next(new ErrorHandler("Nothing to update", 400));
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { 
-        ...(name !== undefined && { name }),
-        ...(bio !== undefined && { bio }) 
-      },
-      { new: true } // return the updated user
-    ).lean();
-
-    if (!updatedUser) {
-      return next(new ErrorHandler("User not found", 404));
-    }
-
-    return SUCCESS(res, 200, "Profile updated successfully", {
-      user: {
-        _id: updatedUser._id,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        bio: updatedUser.bio,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
 };
+
+
+
+export const updateUserProfile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<any> => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
+        }
+
+        const { name, bio } = req.body;
+
+        if (!name && !bio) {
+            return next(new ErrorHandler("Nothing to update", 400));
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {
+                ...(name !== undefined && { name }),
+                ...(bio !== undefined && { bio })
+            },
+            { new: true } // return the updated user
+        ).lean();
+
+        if (!updatedUser) {
+            return next(new ErrorHandler("User not found", 404));
+        }
+
+        return SUCCESS(res, 200, "Profile updated successfully", {
+            user: {
+                _id: updatedUser._id,
+                email: updatedUser.email,
+                name: updatedUser.name,
+                bio: updatedUser.bio,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const getPreferredLanguage = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<any> => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
+        }
+
+        const user = await User.findById(userId).select("preferredLanguage").lean();
+        console.log(user)
+
+        if (!user) {
+            return next(new ErrorHandler("User not found", 404));
+        }
+
+        return SUCCESS(res, 200, "Preferred language fetched successfully.", {
+            preferredLanguage: user.preferredLanguage || "en",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const setPreferredLanguage = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<any> => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
+        }
+
+        const { language } = req.body;
+
+        if (!language) {
+            return next(new ErrorHandler("Preferred language is required.", 400));
+        }
+
+        const allowedLanguages = ["English", "German", "fr", "es"];
+        if (!allowedLanguages.includes(language)) {
+            return next(
+                new ErrorHandler("Invalid language. Allowed: " + allowedLanguages.join(", "), 400)
+            );
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { preferredLanguage:language },
+            { new: true }
+        ).lean();
+
+        if (!updatedUser) {
+            return next(new ErrorHandler("User not found", 404));
+        }
+
+        return SUCCESS(res, 200, "Preferred language updated successfully.", {
+            preferredLanguage: updatedUser.preferredLanguage,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
+
+
 export default {
     socialLogin,
     register,

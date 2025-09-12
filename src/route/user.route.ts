@@ -1,5 +1,5 @@
 import express from "express";
-import userController from "../controller/user.controller";
+import userController, { getPreferredLanguage, setPreferredLanguage } from "../controller/user.controller";
 import validate from "../middleware/validate.middleware";
 import userSchema from "../schema/user.schema";
 import { authenticationMiddleware } from "../middleware/auth.middleware";
@@ -15,5 +15,7 @@ userRouter.post("/verify-otp",validate(userSchema.verifyOtpSchema),userControlle
 userRouter.post("/reset-password",validate(userSchema.resetPasswordSchema),authenticationMiddleware,userController.resetPassword);
 userRouter.get("/get-user",authenticationMiddleware,userController.getUser)
 userRouter.put("/update",authenticationMiddleware,userController.updateUserProfile)
+userRouter.get("/language",authenticationMiddleware,getPreferredLanguage);
+userRouter.post("/language",authenticationMiddleware,setPreferredLanguage);
 
 export default userRouter;

@@ -11,6 +11,7 @@ export interface NewsletterSubscriptionDocument extends Document {
 }
 
 export interface IUser extends Document {
+  preferredLanguage?:string
   bio?:string;
   socialLinkedAccounts?: ISocialLinkedAccount[];
   email?: string;

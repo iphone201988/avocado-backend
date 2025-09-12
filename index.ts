@@ -232,11 +232,11 @@ connectToDB()
 
     // Create HTTPS server
     http.createServer(app).listen(8002, () => {
-      console.log("HTTP Server on 8000");
+      console.log("HTTP Server on 8002");
     });
 
     https.createServer(options, app).listen(8000, () => {
-      console.log("HTTPS Server on 8002");
+      console.log("HTTPS Server on 8000");
     });
   })
   .catch((error) => {
