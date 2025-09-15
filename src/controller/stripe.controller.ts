@@ -41,13 +41,12 @@ export const stripeController = async (req, res) => {
     }
 
 
-    // 3. Create checkout session
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!, // must exist
+          price: process.env.STRIPE_PRICE_ID!, 
           quantity: 1,
         },
       ],

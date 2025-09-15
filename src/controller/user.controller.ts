@@ -5,11 +5,14 @@ import { comparePassword, generateOTP, generateRandomString, hashPassword, signT
 import { sendEmail } from "../utils/sendEmail";
 import ErrorHandler from "../utils/ErrorHandler";
 import subscriptionModel from "../model/subscription.model";
+import { errorTranslations } from "../utils/translations";
 
 const socialLogin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { socialId, provider, email, deviceToken, deviceType } = req.body;
         let user = await findUserBySocialId(socialId, provider);
+        const language = user.preferredLanguage || "English"
+        const t = errorTranslations[language]
         const lowercaseEmail = email?.toLowerCase();
         if (!user) {
             user = await findUserByEmail(lowercaseEmail);
@@ -35,7 +38,7 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
         await user.save();
 
         const token = signToken({ id: user._id, jti });
-        SUCCESS(res, 200, "User login successfully", {
+        SUCCESS(res, 200, `${t.LOGIN_SUCCESS}`, {
             user: userData(user),
             token,
         });
@@ -249,6 +252,7 @@ export const getUser = async (req: Request, res: Response, next: NextFunction): 
     try {
         const userId = req.user?.id;
 
+
         if (!userId) {
             return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
         }
@@ -258,9 +262,12 @@ export const getUser = async (req: Request, res: Response, next: NextFunction): 
         if (!user) {
             return next(new ErrorHandler("User not found", 404));
         }
+
+        const language = user.preferredLanguage || "English";
         const subscription = await subscriptionModel.find({ stripeSubscriptionId: user.subscriptionId }).lean()
+        const t = errorTranslations[language]
         console.log(user.subscriptionId)
-        return SUCCESS(res, 200, "User details fetched successfully", {
+        return SUCCESS(res, 200, t.USER_DETAILS_FETCHED, {
             user: userData(user), subscription
         });
     } catch (error) {
@@ -282,7 +289,7 @@ export const updateUserProfile = async (
             return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
         }
 
-        const { name, bio , preferredLanguage } = req.body;
+        const { name, bio, preferredLanguage } = req.body;
 
         if (!name && !bio && !preferredLanguage) {
             return next(new ErrorHandler("Nothing to update", 400));
@@ -298,17 +305,21 @@ export const updateUserProfile = async (
             { new: true } // return the updated user
         ).lean();
 
+
         if (!updatedUser) {
             return next(new ErrorHandler("User not found", 404));
         }
+        const language = updatedUser.preferredLanguage || "English";
+        const subscription = await subscriptionModel.find({ stripeSubscriptionId: updatedUser.subscriptionId }).lean()
+        const t = errorTranslations[language]
 
-        return SUCCESS(res, 200, "Profile updated successfully", {
+        return SUCCESS(res, 200, t.PROFILE_UPDATED, {
             user: {
                 _id: updatedUser._id,
                 email: updatedUser.email,
                 name: updatedUser.name,
                 bio: updatedUser.bio,
-                preferredLanguage:updatedUser?.preferredLanguage
+                preferredLanguage: updatedUser?.preferredLanguage
             },
         });
     } catch (error) {
@@ -335,9 +346,12 @@ export const getPreferredLanguage = async (
         if (!user) {
             return next(new ErrorHandler("User not found", 404));
         }
+        const language = user.preferredLanguage || "English";
+        const subscription = await subscriptionModel.find({ stripeSubscriptionId: user.subscriptionId }).lean()
+        const t = errorTranslations[language]
 
-        return SUCCESS(res, 200, "Preferred language fetched successfully.", {
-            preferredLanguage: user.preferredLanguage || "en",
+        return SUCCESS(res, 200, t.LANGUAGE_UPDATED, {
+            preferredLanguage: user.preferredLanguage || "English",
         });
     } catch (error) {
         next(error);
@@ -372,7 +386,7 @@ export const setPreferredLanguage = async (
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { preferredLanguage:language },
+            { preferredLanguage: language },
             { new: true }
         ).lean();
 

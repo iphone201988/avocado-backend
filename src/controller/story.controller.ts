@@ -7,15 +7,17 @@ import { generatorMap, SUPPORTED_TYPES } from "./builder.controller";
 import { ModuleKind } from "../schema/lesson.schema";
 import { SocialLoginType } from "../utils/enums";
 import { hasActiveSubscription } from "../middleware/checkSubscription.middleware";
+import { errorTranslations, getUserLanguage } from "../utils/translations";
 
 
 export const generateFullStoryLesson = async (req: Request, res: Response): Promise<any> => {
     try {
         const { title, level, genre,language="german" } = req.body;
         const userId = req.userId;
-
+        const languagepref=await getUserLanguage(userId);
+        const t=errorTranslations[languagepref]
         if (!level || !genre) {
-            throw new ErrorHandler("Missing required fields: language level or genre", 400);
+            throw new ErrorHandler(t.MISSING_FIELDS, 400);
         }
 
         const topic = title?.trim() || `${genre} Story`; // fallback if no title provided
@@ -91,7 +93,7 @@ export const generateFullStoryLesson = async (req: Request, res: Response): Prom
             });
 
         if (generatedModules.length === 0) {
-            throw new ErrorHandler("Failed to generate any modules.", 500);
+            throw new ErrorHandler(t.MODULE_GENERATION_FAILED, 500);
         }
 
         await scoredLesson.save();
