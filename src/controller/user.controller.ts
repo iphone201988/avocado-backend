@@ -191,11 +191,18 @@ const resendOtp = async (req: Request, res: Response, next: NextFunction): Promi
         }
 
         const currentTime = new Date();
-
-        if (user.otpExpiry && currentTime < user.otpExpiry) {
-            const remaining = Math.ceil((user.otpExpiry.getTime() - currentTime.getTime()) / 1000);
-            return next(new ErrorHandler(`OTP was already sent. Please wait ${remaining} seconds before requesting again.`, 429));
-        }
+        const now = new Date();
+        // if (user.lastOtpSentAt && now.getTime() - user.lastOtpSentAt.getTime() < 60 * 1000) {
+        //     const remaining = Math.ceil(
+        //         (60 * 1000 - (now.getTime() - user.lastOtpSentAt.getTime())) / 1000
+        //     );
+        //     return next(
+        //         new ErrorHandler(
+        //             `Please wait ${remaining} seconds before requesting a new OTP.`,
+        //             429
+        //         )
+        //     );
+        // }
 
         const otp = generateOTP();
         user.otp = parseInt(otp, 10);

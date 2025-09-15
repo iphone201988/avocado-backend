@@ -51,6 +51,23 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
       throw new ErrorHandler('Invalid module type', 400);
     }
 
+    const subs = await hasActiveSubscription(userId);
+
+    // 🚩  block generating if single module (not lessonBuilder) + no subscription + type listening/speaking
+    if (
+      type !== 'lessonBuilder' &&
+      !subs.valid &&
+      (type === 'listening' || type === 'speaking')
+    ) {
+      // throw a proper error so your catch block runs
+      return res.status(403).json({
+      success: false,
+      subscriptionRequired:true,
+
+      error:"Subscription required to access this module"
+    });
+    }
+
     // Step 1: Create empty scored lesson
     const scoredLesson = await ScoredLessonModel.create({
       topic,
@@ -63,15 +80,8 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
       modules: [],
     });
 
-    // Step 2: Generate modules (no try/catch here — let it fail if needed)
-    let subscriptionRequired = false
-    const subs = await hasActiveSubscription(userId);
-    console.log(subs);
-    if (!subs.valid) {
-      subscriptionRequired = true
-    }
+    // Step 2: Generate modules
     const generationTasks = typesToGenerate.map(async (modType) => {
-
       const generatorFn = generatorMap[modType];
       if (!generatorFn) {
         throw new ErrorHandler(`No generator found for module type: ${modType}`, 500);
@@ -96,11 +106,9 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
 
       const { moduleId } = await generatorFn(fakeReq);
       const moduleData = await ModuleModel.findById(moduleId);
-
       if (!moduleData) {
         throw new ErrorHandler(`Module not found for type: ${modType}`, 500);
       }
-
 
       return { modType, moduleId, moduleData };
     });
@@ -116,10 +124,13 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
         module: new mongoose.Types.ObjectId(moduleId),
       });
 
-      if (!subs.valid && (modType == "listening" || modType == "speaking")) {
-        generatedModules[modType] = { subscriptionRequired: true, _id: moduleData._id, type: modType }
-      }
-      else {
+      if (!subs.valid && (modType === 'listening' || modType === 'speaking')) {
+        generatedModules[modType] = {
+          subscriptionRequired: true,
+          _id: moduleData._id,
+          type: modType,
+        };
+      } else {
         generatedModules[modType] = moduleData;
       }
     });
@@ -133,7 +144,6 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
         modules: generatedModules,
       },
     });
-
   } catch (error: any) {
     console.error('Error generating and storing module:', error);
     const status = error instanceof ErrorHandler ? error.statusCode : 500;
@@ -147,6 +157,7 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
 
 
 
+
 export type FeedbackInput = {
   moduleId: string;
   answers?: string[];
@@ -155,14 +166,14 @@ export type FeedbackInput = {
   language: string;
 };
 
-  type FeedbackHelper = (input: FeedbackInput) => Promise<{ feedback: any; moduleId: string ,conversation?: any; }>;
+type FeedbackHelper = (input: FeedbackInput) => Promise<{ feedback: any; moduleId: string, conversation?: any; }>;
 
-  const feedBackMap: Record<string, FeedbackHelper> = {
-    reading: generateReadingFeedbackHelper,
-    listening: generateListeningFeedbackHelper,
-    writing: generateWritingFeedbackHelper,
-    speaking: generateSpeakingFeedbackHelper,
-  };
+const feedBackMap: Record<string, FeedbackHelper> = {
+  reading: generateReadingFeedbackHelper,
+  listening: generateListeningFeedbackHelper,
+  writing: generateWritingFeedbackHelper,
+  speaking: generateSpeakingFeedbackHelper,
+};
 
 
 
@@ -183,18 +194,18 @@ export const generateFeedback = async (req: Request, res: Response): Promise<any
 
     const moduleId = moduleEntry.module.toString();
     const feedbackFn = feedBackMap[type];
-    
+
 
     if (!feedbackFn) {
       throw new ErrorHandler(`No feedback function defined for type ${type}`, 400);
     }
 
     const input: FeedbackInput = { moduleId, answers, paragraph, response, language };
-    const { feedback ,conversation} = await feedbackFn(input);
+    const { feedback, conversation } = await feedbackFn(input);
 
     return res.status(200).json({
       success: true, data: {
-        moduleId, feedback ,conversation
+        moduleId, feedback, conversation
       }
     });
 
@@ -212,13 +223,13 @@ export const getModuleByBuilderAndType = async (req: Request, res: Response): Pr
   try {
     const { builderId, type } = req.params;
     let subscriptionRequired = false
-    const userId=req.userId
+    const userId = req.userId
     const subs = await hasActiveSubscription(userId);
     console.log(subs);
     if (!subs.valid) {
       subscriptionRequired = true
     }
-   
+
 
 
     const builder = await ScoredLessonModel.findById(builderId);
@@ -235,18 +246,18 @@ export const getModuleByBuilderAndType = async (req: Request, res: Response): Pr
     if (!module) {
       throw new ErrorHandler('Module not found.', 404);
     }
-     if(subscriptionRequired && (type=="listening" || type=="speaking")){
+    if (subscriptionRequired && (type == "listening" || type == "speaking")) {
       return res.status(200).json({
-      success: true,
-      data: {
-        title: builder.topic,
-        moduleId: module._id,
-        type,
-        module:{
-          subscriptionRequired: true, _id: module._id, type: module.type
-        },
-      }
-    });
+        success: true,
+        data: {
+          title: builder.topic,
+          moduleId: module._id,
+          type,
+          module: {
+            subscriptionRequired: true, _id: module._id, type: module.type
+          },
+        }
+      });
     }
 
     return res.status(200).json({

@@ -28,6 +28,7 @@ const userSchema = new Schema<IUser>(
         },
       }
     ],
+    lastOtpSentAt: { type: Date },
     deviceToken: { type: String },
     deviceType: { type: Number, enum: [deviceType.WEB] },
     jti: { type: String },
