@@ -282,9 +282,9 @@ export const updateUserProfile = async (
             return next(new ErrorHandler("Unauthorized. User ID not found.", 401));
         }
 
-        const { name, bio } = req.body;
+        const { name, bio , preferredLanguage } = req.body;
 
-        if (!name && !bio) {
+        if (!name && !bio && !preferredLanguage) {
             return next(new ErrorHandler("Nothing to update", 400));
         }
 
@@ -292,7 +292,8 @@ export const updateUserProfile = async (
             userId,
             {
                 ...(name !== undefined && { name }),
-                ...(bio !== undefined && { bio })
+                ...(bio !== undefined && { bio }),
+                ...(preferredLanguage !== undefined && { preferredLanguage })
             },
             { new: true } // return the updated user
         ).lean();
@@ -307,6 +308,7 @@ export const updateUserProfile = async (
                 email: updatedUser.email,
                 name: updatedUser.name,
                 bio: updatedUser.bio,
+                preferredLanguage:updatedUser?.preferredLanguage
             },
         });
     } catch (error) {
