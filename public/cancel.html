@@ -2,45 +2,146 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment Cancelled</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #fef2f2;
+      font-family: 'Inter','Arial',sans-serif;
+      background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%);
       color: #991b1b;
-      padding: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
     }
+
     .container {
       max-width: 500px;
-      margin: auto;
+      width: 90%;
       background: #fee2e2;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-    h1 {
-      color: #dc2626;
+
+    /* Subtle falling “sparks” */
+    .container::before, .container::after {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      background-image:
+        radial-gradient(circle at 10% 20%, #dc2626 2px, transparent 2px),
+        radial-gradient(circle at 30% 50%, #f87171 2px, transparent 2px),
+        radial-gradient(circle at 70% 30%, #ef4444 2px, transparent 2px),
+        radial-gradient(circle at 90% 60%, #991b1b 2px, transparent 2px);
+      background-size: 60px 60px;
+      animation: spark 6s linear infinite;
+      opacity: 0.15;
+      z-index: 0;
     }
-    a {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 20px;
+
+    @keyframes spark {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .icon {
+      width: 80px;
+      height: 80px;
       background: #dc2626;
       color: white;
-      border-radius: 8px;
-      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      box-shadow: 0 4px 10px rgba(220,38,38,0.4);
+      animation: pop 0.5s ease;
     }
-    a:hover {
-      background: #991b1b;
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    h1 {
+      color: #dc2626;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #991b1b;
+      margin-bottom: 20px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .actions a {
+      display: inline-block;
+      width: 100%;
+      max-width: 260px;
+      text-align: center;
+      background: linear-gradient(90deg,#dc2626,#991b1b);
+      color: #ffffff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    }
+
+    .actions a:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .actions .secondary {
+      background: transparent;
+      border: 2px solid #dc2626;
+      color: #dc2626;
+    }
+
+    .actions .secondary:hover {
+      background: #fee2e2;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.5rem; }
+      .container { padding: 30px 20px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>❌ Payment Cancelled</h1>
-    <p>You cancelled the checkout process. No charges were made.</p>
-    <a href="https://16.170.13.143/">Try Again</a>
+    <div class="content">
+      <div class="icon">❌</div>
+      <h1>Payment Cancelled</h1>
+      <p>You cancelled the checkout process. No charges were made.</p>
+
+      <div class="actions">
+        <a href="https://16.170.13.143/">Go Back to Home</a>
+      </div>
+    </div>
   </div>
 </body>
 </html>

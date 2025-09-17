@@ -2,45 +2,175 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment Successful</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f0fdf4;
+      font-family: 'Inter', 'Arial', sans-serif;
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
       color: #065f46;
-      padding: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
     }
+
     .container {
       max-width: 500px;
-      margin: auto;
+      width: 90%;
       background: #ecfdf5;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
+
+    /* Confetti (CSS pseudo) */
+    .container::before, .container::after {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      background-image:
+        radial-gradient(circle at 10% 20%, #10b981 2px, transparent 2px),
+        radial-gradient(circle at 30% 50%, #34d399 2px, transparent 2px),
+        radial-gradient(circle at 70% 30%, #6ee7b7 2px, transparent 2px),
+        radial-gradient(circle at 90% 60%, #047857 2px, transparent 2px);
+      background-size: 60px 60px;
+      animation: confetti 6s linear infinite;
+      opacity: 0.2;
+      z-index: 0;
+    }
+
+    @keyframes confetti {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .icon {
+      width: 80px;
+      height: 80px;
+      background: #10b981;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+      animation: pop 0.5s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
     h1 {
       color: #047857;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
     }
-    a {
+
+    p {
+      font-size: 1rem;
+      color: #065f46;
+      margin-bottom: 20px;
+    }
+
+    .summary {
+      background: #d1fae5;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: left;
+      margin-bottom: 25px;
+    }
+
+    .summary h2 {
+      font-size: 1.2rem;
+      margin: 0 0 10px;
+      color: #065f46;
+    }
+
+    .summary p {
+      margin: 4px 0;
+      font-size: 0.95rem;
+      color: #047857;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .actions a {
       display: inline-block;
-      margin-top: 20px;
-      padding: 12px 20px;
-      background: #047857;
-      color: white;
-      border-radius: 8px;
+      width: 100%;
+      max-width: 260px;
+      text-align: center;
+      background: linear-gradient(90deg,#10b981,#059669);
+      color: #ffffff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
       text-decoration: none;
+      transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
     }
-    a:hover {
-      background: #065f46;
+
+    .actions a:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .actions .secondary {
+      background: transparent;
+      border: 2px solid #10b981;
+      color: #10b981;
+    }
+
+    .actions .secondary:hover {
+      background: #d1fae5;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.5rem; }
+      .summary h2 { font-size: 1rem; }
+      .container { padding: 30px 20px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎉 Payment Successful!</h1>
-    <p>Thank you for subscribing. Your payment has been confirmed.</p>
-    <a href="https://16.170.13.143/">Go back to Home</a>
+    <div class="content">
+      <div class="icon">✔</div>
+      <h1>Payment Successful!</h1>
+      <p>Thank you for subscribing. Your payment has been confirmed and your account is now upgraded.</p>
+
+      <div class="summary">
+        <h2>Your Subscription</h2>
+        <p><strong>Plan:</strong> Premium (Monthly)</p>
+        <!-- <p><strong>Amount Paid:</strong> $9.99</p> -->
+        <!-- <p><strong>Next Billing Date:</strong> 17 Oct 2025</p> -->
+      </div>
+
+      <div class="actions">
+        <a href="https://16.170.13.143/">Go Back to Home</a>
+        <!-- <a href="#" class="secondary">Manage Subscription</a> -->
+      </div>
+    </div>
   </div>
 </body>
 </html>
