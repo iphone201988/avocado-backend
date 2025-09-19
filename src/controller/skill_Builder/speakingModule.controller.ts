@@ -178,7 +178,7 @@ Return feedback in this strict JSON format ONLY:
 `.trim();
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-5",
     messages: [
       {
         role: 'system',
