@@ -61,11 +61,11 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
     ) {
       // throw a proper error so your catch block runs
       return res.status(403).json({
-      success: false,
-      subscriptionRequired:true,
+        success: false,
+        subscriptionRequired: true,
 
-      error:"Subscription required to access this module"
-    });
+        error: "Subscription required to access this module"
+      });
     }
 
     // Step 1: Create empty scored lesson
@@ -260,6 +260,13 @@ export const getModuleByBuilderAndType = async (req: Request, res: Response): Pr
       });
     }
 
+    const user = await User.findById(userId).select('lessons');
+
+    const isSaved = user?.lessons?.some(
+      (lesson) => lesson.moduleId.toString() === builderId.toString()
+    ) ?? false;
+
+
     return res.status(200).json({
       success: true,
       data: {
@@ -267,6 +274,7 @@ export const getModuleByBuilderAndType = async (req: Request, res: Response): Pr
         moduleId: module._id,
         type,
         module,
+        isSaved
       }
     });
 

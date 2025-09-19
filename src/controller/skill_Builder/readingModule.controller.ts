@@ -130,7 +130,7 @@ Do not include any explanations, notes, titles, or labels outside the JSON struc
   let content = '';
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: "gpt-4o-mini",
       messages: [
         {
           role: 'system',
@@ -253,7 +253,7 @@ Nur JSON antworten, auf Deutsch. Keine Erklärungen.
   let content = '';
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: "gpt-4o-mini",
       // temperature: 0.7,
       messages: [
         { role: 'system', content: 'Du bist ein hilfsbereiter Deutschlehrer.' },

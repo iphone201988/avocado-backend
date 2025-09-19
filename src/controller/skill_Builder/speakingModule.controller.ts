@@ -42,7 +42,7 @@ Reply **only in JSON format** like this:
   let completion;
   try {
     completion = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: "gpt-4o-mini",
       // temperature: 0.8,
       messages: [
         {
@@ -178,7 +178,7 @@ Return feedback in this strict JSON format ONLY:
 `.trim();
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-5',
+    model: "gpt-4o-mini",
     messages: [
       {
         role: 'system',

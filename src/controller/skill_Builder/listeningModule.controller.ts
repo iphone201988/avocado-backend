@@ -66,7 +66,7 @@ Respond **strictly** in this JSON format:
   let completion;
   try {
     completion = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: "gpt-4o-mini",
       messages: [
         {
           role: 'system',
@@ -177,7 +177,7 @@ Now give detailed feedback for each answer in the following JSON format only:
   let content = '';
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: "gpt-4o-mini",
       // temperature: 0.7,
       messages: [
         {
@@ -259,7 +259,7 @@ Do not include any explanations, markdown, or additional commentary. Output a ra
 `;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: "gpt-4o-mini",
       // temperature: 0.7,
       messages: [
         {

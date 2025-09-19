@@ -11,7 +11,7 @@ export const stringValidation = (key: string, isRequired: boolean = true) => {
         "any.required": `${key} is required`,
       });
   } else {
-    schema = Joi.string()
+    schema = Joi.string ()
       .optional()
       .messages({
         "string.empty": `${key} cannot be empty.`,
