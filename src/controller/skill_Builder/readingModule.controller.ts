@@ -55,7 +55,7 @@ Follow these instructions strictly:
 
 1. Topic: The content must be based on the topic: "${topic}". Stay focused on this topic throughout the paragraph and questions.
 
-2. Learner Level: The paragraph must be written at a reading level appropriate for "${level}" language learners. Use vocabulary and sentence structures suitable for this proficiency level only. Avoid words or constructions that would be too advanced for learners at this stage.
+2. Learner Level: The paragraph must be written at a reading level appropriate for "${level}" language learners. Use vocabulary and sentence structures suitable for this proficiency level only. THE LEVEL PARAMETERS SHOULD BE STRICTLY WORKING AND IT BASED ON GERMAN STANDARDS LIKE A1,A2,B1,B2.. ETC. ,INCREASE THE GRAMMER AND COMPLEXITY WITH INCREASING ORDER AND MAX IS IN C2 AND MINIMUM IS IN A1 
 
 3. Tone: Use a "${formality}" tone. If formal, avoid contractions, colloquialisms, or overly casual expressions. If informal, you may use conversational phrases appropriate to the learners’ level.
 

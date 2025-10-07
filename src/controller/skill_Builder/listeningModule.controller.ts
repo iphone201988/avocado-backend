@@ -43,7 +43,7 @@ You are a helpful assistant that creates listening-focused content for language 
 
 Your task:
 - Generate a **spoken-style paragraph** of at least 100 words on the topic: "${topic}"
-- It should be suitable for a learner at "${level}" level
+- Learner Level: The paragraph must be written at a reading level appropriate for "${level}" language learners. Use vocabulary and sentence structures suitable for this proficiency level only. THE LEVEL PARAMETERS SHOULD BE STRICTLY WORKING AND IT BASED ON GERMAN STANDARDS LIKE A1,A2,B1,B2.. ETC. ,INCREASE THE GRAMMER AND COMPLEXITY WITH INCREASING ORDER AND MAX IS IN C2 AND MINIMUM IS IN A1 
 - Use a "${formality}" tone and style: ${style || 'casual spoken monologue'}
 - The language of the **entire response must be strictly in ${language}** — do not switch languages, do not explain or translate.
 - The paragraph should sound natural, as if spoken aloud in ${language}
