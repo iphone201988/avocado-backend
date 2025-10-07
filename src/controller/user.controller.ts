@@ -11,7 +11,7 @@ const socialLogin = async (req: Request, res: Response, next: NextFunction): Pro
     try {
         const { socialId, provider, email, deviceToken, deviceType } = req.body;
         let user = await findUserBySocialId(socialId, provider);
-        const language = user.preferredLanguage || "English"
+        const language = "English"
         const t = errorTranslations[language]
         const lowercaseEmail = email?.toLowerCase();
         if (!user) {

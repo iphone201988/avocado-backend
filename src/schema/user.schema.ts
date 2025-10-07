@@ -27,7 +27,7 @@ const socialLoginSchema = {
   body: Joi.object({
     socialId: stringValidation("Social ID"),
     provider: specificNumberValidation("Provider", SocialLoginType),
-    email: emailValidation(),
+    email: stringValidation("email"),
     deviceToken: stringValidation("Device Token", false),
     deviceType: specificNumberValidation("Device Type", deviceType, false)
   })

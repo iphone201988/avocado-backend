@@ -89,7 +89,7 @@ export const generateAndStoreModuleSchema = {
     style: stringValidation("Style", false),
     language:Joi.string()
       .optional()
-      .valid("german","english")
+      .valid("German","English")
       .messages({
         "any.only": `Language must be one of: "german","english"`,
         "any.required": "Language is required.",
@@ -149,14 +149,14 @@ export const generateFullStoryLessonSchema = {
         "any.only": "Level must be one of beginner,intermediate,advanced",
       }),
     genre: Joi.string()
-      .required()
+      .optional()
       .messages({
         "string.base": "Genre must be a string.",
         "any.required": "Genre is required.",
       }),
       language:Joi.string()
       .optional()
-      .valid("german","english")
+      .valid("German","English")
       .messages({
         "any.only": `Language must be one of: "german","english"`,
         "any.required": "Language is required.",

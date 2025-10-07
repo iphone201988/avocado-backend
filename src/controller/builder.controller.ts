@@ -33,10 +33,23 @@ export const generateAndStoreModule = async (req: Request, res: Response): Promi
       formality,
       writingType,
       style = 'defaultStyle',
-      language = 'german',
       lengthOption,
       length,
     } = req.body;
+
+    let language = req.body.language
+    if (!language || language == "English") {
+      language = "German";
+    }
+    else {
+      language = "English"
+    }
+    // console.log("topic...",topic);
+    // console.log("level...",level);
+    // console.log("formality...",formality);
+    // console.log("style...",style);
+    // console.log("language...",language);
+    // console.log("level...",level);
 
     const userId = req.userId;
 

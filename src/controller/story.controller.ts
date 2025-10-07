@@ -12,11 +12,18 @@ import { errorTranslations, getUserLanguage } from "../utils/translations";
 
 export const generateFullStoryLesson = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { title, level, genre,language="german" } = req.body;
+        const { title="", level, genre="random" } = req.body;
+        let language=req.body.language
+        if(!language || language=="English"){
+            language="German";
+        }
+        else{
+            language="English"
+        }
         const userId = req.userId;
         const languagepref=await getUserLanguage(userId);
         const t=errorTranslations[languagepref]
-        if (!level || !genre) {
+        if (!level ) {
             throw new ErrorHandler(t.MISSING_FIELDS, 400);
         }
 
@@ -42,7 +49,7 @@ export const generateFullStoryLesson = async (req: Request, res: Response): Prom
                 ...req,
                 body: {
                     ...req.body,
-                    language:"German",
+                    language,
                     topic: scoredLesson.topic,
                     level: scoredLesson.level,
                     formality: scoredLesson.formality,
