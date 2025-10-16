@@ -126,7 +126,7 @@ DO NOT include explanations, formatting, or anything outside the JSON object.
 `.trim();
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-5",
+    model: "gpt-4",
     // temperature: 0.7,
     messages: [
       {

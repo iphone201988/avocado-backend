@@ -177,7 +177,7 @@ Now give detailed feedback for each answer in the following JSON format only:
   let content = '';
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4",
       // temperature: 0.7,
       messages: [
         {
@@ -230,14 +230,14 @@ Now give detailed feedback for each answer in the following JSON format only:
 
 export const getWordOrSentenceInsights = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { text} = req.query 
+    const { text, language} = req.query 
 
     if (!text || typeof text !== 'string') {
       throw new ErrorHandler('"text" is required as a query parameter.', 400);
     }
 
     const prompt = `
-You are a multilingual language assistant specialized in analyzing and explaining words and concepts in the german language.
+You are a multilingual language assistant specialized in analyzing and explaining words and concepts in the ${language}} language.
 
 Given the following input in english: "${text}"
 

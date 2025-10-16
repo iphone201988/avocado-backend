@@ -58,9 +58,13 @@ export const getBuilderByIdSchema = {
 
 export const getWordOrSentenceInsightsSchema = {
   query: Joi.object({
-    text: stringValidation("Text")
+    text: stringValidation("Text"),
+    language:Joi.string()
+      .optional()
+      .valid("German","English")
+      .messages({
   })
-};
+})};
 
 export const linkUserWithBuilderSchema = {
   body: Joi.object({
@@ -142,11 +146,11 @@ export const generateFullStoryLessonSchema = {
   body: Joi.object({
     title: stringValidation("Story Title", false),
     level: Joi.string()
-      .valid("beginner","intermediate","advanced") 
+      .valid("A1","A2","B1","B2","C1","C2") 
       .required()
       .messages({
         "any.required": "Language level is required.",
-        "any.only": "Level must be one of beginner,intermediate,advanced",
+        "any.only": "Level must be one of A1,A2,B1,B2,C1,C2",
       }),
     genre: Joi.string()
       .optional()
