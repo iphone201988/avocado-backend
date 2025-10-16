@@ -195,11 +195,11 @@ app.use(cors());
 // });
 // });
 
-// const options = {
-//   key: fs.readFileSync(path.resolve(__dirname, "../ssl/private.key"), 'utf8'),
-//   cert: fs.readFileSync(path.resolve(__dirname, "../ssl/certificate.crt"), 'utf8'),
-//   ca: fs.readFileSync(path.resolve(__dirname, "../ssl/ca_bundle.crt"), 'utf8'),
-// };
+const options = {
+  key: fs.readFileSync(path.resolve(__dirname, "../ssl/private.key"), 'utf8'),
+  cert: fs.readFileSync(path.resolve(__dirname, "../ssl/certificate.crt"), 'utf8'),
+  ca: fs.readFileSync(path.resolve(__dirname, "../ssl/ca_bundle.crt"), 'utf8'),
+};
 
 app.get("/cancel", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "src", "public", "cancel.html"));
@@ -231,13 +231,13 @@ connectToDB()
     console.log("Connected to DB successfully", process.env.MONGO_URI);
 
     // Create HTTPS server
-    http.createServer(app).listen(8002, () => {
-      console.log("HTTP Server on 8002");
-    });
-
-    // https.createServer(options, app).listen(8000, () => {
-    //   console.log("HTTPS Server on 8000");
+    // http.createServer(app).listen(8002, () => {
+    //   console.log("HTTP Server on 8002");
     // });
+
+    https.createServer(options, app).listen(8000, () => {
+      console.log("HTTPS Server on 8000");
+    });
   })
   .catch((error) => {
     console.log("Error connecting to DB", error);
