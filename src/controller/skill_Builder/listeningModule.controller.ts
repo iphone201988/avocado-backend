@@ -21,7 +21,7 @@ export const generateAudio = async (req: Request): Promise<{ moduleId: string }>
   //     type: 'listening',
   //     subscriptionRequired:true
   //   });
-    
+
 
 
   //   return { moduleId: newModule._id.toString() };
@@ -30,7 +30,7 @@ export const generateAudio = async (req: Request): Promise<{ moduleId: string }>
   //   throw new ErrorHandler('Failed to save generated module to the database.', 500);
   // }
   //   }
-  
+
 
   const { topic, level, formality, style = 'defaultStyle', language = 'german' } = req.body;
 
@@ -92,8 +92,8 @@ Respond **strictly** in this JSON format:
     console.error('OpenAI response was not valid JSON:', content);
     throw new ErrorHandler('Failed to parse OpenAI response.', 500);
   }
-   
-     
+
+
   try {
     const newModule = await ModuleModel.create({
       type: 'listening',
@@ -102,7 +102,7 @@ Respond **strictly** in this JSON format:
       comprehension: data.comprehension,
       aiFeedback: null,
     });
-    
+
 
 
     return { moduleId: newModule._id.toString() };
@@ -154,8 +154,8 @@ Comprehension passage:
 
 Questions and student answers:
 ${questions
-  .map((q, i) => `Question ${i + 1}: ${q}\nStudent answer: ${answers[i]}`)
-  .join('\n\n')}
+      .map((q, i) => `Question ${i + 1}: ${q}\nStudent answer: ${answers[i]}`)
+      .join('\n\n')}
 
 Now give detailed feedback for each answer in the following JSON format only:
 
@@ -228,68 +228,144 @@ Now give detailed feedback for each answer in the following JSON format only:
 
 
 
+// export const getWordOrSentenceInsights = async (req: Request, res: Response): Promise<any> => {
+//   try {
+//     const { text, language} = req.query 
+
+//     if (!text || typeof text !== 'string') {
+//       throw new ErrorHandler('"text" is required as a query parameter.', 400);
+//     }
+
+//     const prompt = `
+// You are a multilingual language assistant specialized in analyzing and explaining words and concepts in the ${language}} language.
+
+// Given the following input in english: "${text}"
+
+// Perform the following steps:
+// 1. If the input is a **single word**, treat it as the main keyword.
+// 2. If the input is a **full sentence**, then translate that sentence.
+
+// Return ONLY a well-formatted JSON object with the following fields:
+
+// {
+//   "noun": "<Extracted keyword or input word>",
+//   "meaning": "<Concise English definition of the word>",
+//   "example": "<german sentence using the word in natural context (may reuse the input if appropriate)>",
+//   "translation": "<English translation of the "${text}"",
+//   "synonyms": "<Comma-separated list of 2 to 4 german synonyms>"
+// }
+
+// Do not include any explanations, markdown, or additional commentary. Output a raw JSON object only.
+// `;
+
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-4o-mini",
+//       // temperature: 0.7,
+//       messages: [
+//         {
+//           role: 'system',
+//           content: 'You are a helpful assistant that explains ${language} words and sentences.',
+//         },
+//         {
+//           role: 'user',
+//           content: prompt,
+//         },
+//       ],
+//     });
+
+//     const content = completion.choices[0]?.message?.content?.trim();
+//     if (!content) throw new ErrorHandler('No content returned by OpenAI.', 502);
+
+//     let result;
+//     try {
+//       result = JSON.parse(content);
+//       return res.status(200).json(result);
+//     } catch (err) {
+//       console.warn('OpenAI returned non-JSON output. Returning raw content.');
+//       return res.status(200).json({
+//         raw: content,
+//         warning: 'The response was not valid JSON. Returning raw text instead.',
+//       });
+//     }
+
+//   } catch (error: any) {
+//     const status = error instanceof ErrorHandler ? error.statusCode : 500;
+//     return res.status(status).json({ error: error.message || 'Internal Server Error' });
+//   }
+// };
+
+
+
+import axios from 'axios';
+
+const GOOGLE_TRANSLATE_API_KEY = process.env.GOOGLE_TRANSLATE_API_KEY;
+const GOOGLE_TRANSLATE_API_URL = 'https://translation.googleapis.com/language/translate/v2';
+
 export const getWordOrSentenceInsights = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { text, language} = req.query 
-
+    const { text, language } = req.query;
+    // console.log("text...",text,"....language...",language)
     if (!text || typeof text !== 'string') {
       throw new ErrorHandler('"text" is required as a query parameter.', 400);
     }
 
-    const prompt = `
-You are a multilingual language assistant specialized in analyzing and explaining words and concepts in the ${language}} language.
+    // Determine if input is single word or sentence
+    const isSentence = text.trim().split(' ').length > 1;
 
-Given the following input in english: "${text}"
-
-Perform the following steps:
-1. If the input is a **single word**, treat it as the main keyword.
-2. If the input is a **full sentence**, then translate that sentence.
-
-Return ONLY a well-formatted JSON object with the following fields:
-
-{
-  "noun": "<Extracted keyword or input word>",
-  "meaning": "<Concise English definition of the word>",
-  "example": "<german sentence using the word in natural context (may reuse the input if appropriate)>",
-  "translation": "<English translation of the "${text}"",
-  "synonyms": "<Comma-separated list of 2 to 4 german synonyms>"
-}
-
-Do not include any explanations, markdown, or additional commentary. Output a raw JSON object only.
-`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      // temperature: 0.7,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant that explains ${language} words and sentences.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
-
-    const content = completion.choices[0]?.message?.content?.trim();
-    if (!content) throw new ErrorHandler('No content returned by OpenAI.', 502);
-
-    let result;
-    try {
-      result = JSON.parse(content);
-      return res.status(200).json(result);
-    } catch (err) {
-      console.warn('OpenAI returned non-JSON output. Returning raw content.');
-      return res.status(200).json({
-        raw: content,
-        warning: 'The response was not valid JSON. Returning raw text instead.',
-      });
+    // Translate input text to English
+    console.log("..........")
+    let targetLan = "en";
+    let souceLan = "de";
+    if (language == "English") {
+      targetLan = "en";
+      souceLan = "de"
+    }
+    else {
+      targetLan = "de";
+      souceLan = "en";
     }
 
-  } catch (error: any) {
-    const status = error instanceof ErrorHandler ? error.statusCode : 500;
-    return res.status(status).json({ error: error.message || 'Internal Server Error' });
+    const translateResponse = await axios.post(
+      `https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_TRANSLATE_API_KEY}`,
+      {
+        q: text,
+        target: targetLan,
+        // source: souceLan,
+        format: 'text',
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("translateResponse......", translateResponse)
+
+    const translatedText = translateResponse.data.data.translations[0].translatedText;
+
+    // Approximate some response keys:
+    const noun = isSentence ? '' : text; // if single word, treat as noun
+    const meaning = isSentence ? '' : translatedText; // meaning approximated by translation for single word
+    const example = isSentence ? text : ''; // if sentence, return input as example
+    const translation = translatedText;
+    const synonyms = ''; // no synonym source without external dictionary API
+
+    return res.status(200).json({
+      noun,
+      meaning,
+      example,
+      translation,
+      synonyms,
+    });
+  } catch (err: any) {
+    console.error("Google Translate Error:");
+    if (err.response) {
+      console.error("Status:", err.response.status);
+      console.error("Data:", err.response.data);
+    } else {
+      console.error(err.message);
+    }
+    const status = err instanceof ErrorHandler ? err.statusCode : 500;
+    return res.status(status).json({ error: err.message || 'Internal Server Error' });
   }
 };
